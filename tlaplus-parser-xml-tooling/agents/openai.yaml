@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Parser XML Tooling"
+  short_description: "Maintain SANY parser and XML export"
+  default_prompt: "Use $tla-plus-parser-xml-tooling to work on grammar parser or XML export."

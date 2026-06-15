@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Syntax"
+  short_description: "Read and validate TLA+ specs"
+  default_prompt: "Use $tla-plus-syntax to read or validate this TLA+ spec."

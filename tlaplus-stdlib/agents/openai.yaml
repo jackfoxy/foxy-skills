@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Standard Library"
+  short_description: "Work with StandardModules and overrides"
+  default_prompt: "Use $tla-plus-stdlib to modify a TLA+ standard module or TLC override."

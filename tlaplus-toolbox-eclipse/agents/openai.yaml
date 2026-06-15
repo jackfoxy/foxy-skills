@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Toolbox Eclipse"
+  short_description: "Build and maintain Toolbox RCP"
+  default_prompt: "Use $tla-plus-toolbox-eclipse to work on the TLA+ Toolbox IDE."

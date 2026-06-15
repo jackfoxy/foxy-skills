@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ PlusCal"
+  short_description: "Translate and debug PlusCal"
+  default_prompt: "Use $tla-plus-pluscal to translate or debug this PlusCal algorithm."

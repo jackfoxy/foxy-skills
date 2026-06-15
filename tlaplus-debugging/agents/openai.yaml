@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Debugging"
+  short_description: "Diagnose SANY and TLC failures"
+  default_prompt: "Use $tla-plus-debugging to diagnose this TLA+ tool failure."

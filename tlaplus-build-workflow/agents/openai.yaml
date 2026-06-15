@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Build Workflow"
+  short_description: "Build and test TLA+ tools"
+  default_prompt: "Use $tla-plus-build-workflow to choose the right build and test commands."

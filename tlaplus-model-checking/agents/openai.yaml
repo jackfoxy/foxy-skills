@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Model Checking"
+  short_description: "Run and interpret TLC models"
+  default_prompt: "Use $tla-plus-model-checking to run and interpret this TLC model."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Tools Internals"
+  short_description: "Modify SANY TLC and PlusCal internals"
+  default_prompt: "Use $tla-plus-tools-internals to trace or modify TLA+ toolchain internals."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Performance"
+  short_description: "Tune and measure TLC models"
+  default_prompt: "Use $tla-plus-performance to measure or tune this TLC model."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Overview"
+  short_description: "Navigate the TLA+ tools repo"
+  default_prompt: "Use $tla-plus-overview to route a TLA+ tools repository task."

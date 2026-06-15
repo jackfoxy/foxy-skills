@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Contribution"
+  short_description: "Prepare TLA+ toolchain PRs"
+  default_prompt: "Use $tla-plus-contribution to prepare a compliant TLA+ tools change."
