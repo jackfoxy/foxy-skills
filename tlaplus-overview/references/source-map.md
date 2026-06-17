@@ -1,6 +1,8 @@
 # TLA+ Tools Source Map
 
-Repository: `/mnt/mars/gitrepos/tlaplus`.
+Repository: `/mnt/mars/gitrepos/tlaplus` — source of truth for the **Java toolchain** (SANY, TLC, PlusCal, XML export, TLA2TeX, formatter Java impl, StandardModules + overrides). This map covers this repo **only**.
+
+VS Code/Cursor extension behavior (commands, settings, webviews/panels, diagnostics, output parsing, MCP, syntax highlighting, bundled-jar usage + packaging) is **not authoritative here** — it lives in the separate `/mnt/mars/gitrepos/vscode-tlaplus` repo, which has no skill in this pack. The bundled `tools/tla2tools.jar` there may not match this checkout. See the boundary table in `SKILL.md`.
 
 | Local path | Knowledge | Skills | Authority |
 |---|---|---|---|

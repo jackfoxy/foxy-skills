@@ -14,6 +14,17 @@ This repo (`tlaplus/tlaplus`) is the **Java source repo for the TLA⁺ toolchain
 - **`tlatools/org.lamport.tlatools/`** — the CLI tools, packaged as one `tla2tools.jar`. Built with **Ant** (`customBuild.xml`), wrapped by Maven.
 - **`toolbox/`** — the Eclipse-RCP IDE (~30 OSGi plugins), built with **Maven/Tycho**. Currently **unmaintained** / lower-priority vs. CLI + VS Code.
 
+## Source-of-truth boundary (two repos)
+
+This pack covers the **Java toolchain only**. The VS Code/Cursor extension is a **separate repo** with its own source of truth — do **not** inspect or edit it here, and do not treat it as authoritative for Java internals.
+
+| Behavior | Source of truth | Where to inspect |
+|---|---|---|
+| SANY parse/semantic/level checking, TLC checking/simulation/liveness/debugger **engine**, PlusCal translator, XML exporter, TLA2TeX, formatter Java impl, StandardModules + Java overrides (`tlc2`, `tla2sany`, `pcal`, `tla2tex`, `formatter`, `util`, `model`) | `tlaplus` | `/mnt/mars/gitrepos/tlaplus` (this pack) |
+| Extension activation/commands/settings/menus/views, TS integration around the jar, webviews/panels/diagnostics/**output parsing**, MCP tools, bundled-jar usage + packaging, UI/UX, extension+Playwright tests, syntax highlighting/snippets/language config | `vscode-tlaplus` | `/mnt/mars/gitrepos/vscode-tlaplus` (no skill in this pack) |
+
+`vscode-tlaplus` bundles `tools/tla2tools.jar` but contains **no Java source**; the bundled jar may not match the local `tlaplus` checkout. For behavior that crosses the boundary (e.g. extension parsing TLC output), inspect both and name the boundary contract explicitly.
+
 Primary conceptual reference: Lamport's *Specifying Systems* — https://lamport.azurewebsites.net/tla/book.html
 
 ## Start here
@@ -41,7 +52,7 @@ java tla2sany.xml.XMLExporter -help # parse tree as XML
 ⚠ **TLC holds global static state** — it cannot be run twice in one JVM process; use a fresh process (or reload its classes) for repeated runs. SANY's `parse()` is process-safe but not thread-safe.
 
 Interfaces, in order of recommendation for new users:
-1. **VS Code extension** (https://github.com/tlaplus/vscode-tlaplus/) — the modern graphical UI.
+1. **VS Code extension** (https://github.com/tlaplus/vscode-tlaplus/) — the modern graphical UI. Its behavior lives in the separate `vscode-tlaplus` repo (see boundary above), not here.
 2. **`tla2tools.jar` CLI** — for scripting, CI, non-Java consumers (XML/DOT/JSON export).
 3. **Eclipse Toolbox** — legacy, unmaintained; see [[tlaplus-toolbox-eclipse]].
 
@@ -85,6 +96,7 @@ Get the jar from [Releases](https://github.com/tlaplus/tlaplus/releases) (master
 | Modify SANY/TLC/translator Java internals | [[tlaplus-tools-internals]] |
 | JavaCC grammar, generated parser, XML AST, sany.xsd, corpus | [[tlaplus-parser-xml-tooling]] |
 | Eclipse Toolbox IDE, OSGi plugins, Tycho build | [[tlaplus-toolbox-eclipse]] |
+| VS Code/Cursor extension behavior, settings, webviews, MCP, output parsing, packaging | out of pack → `/mnt/mars/gitrepos/vscode-tlaplus` |
 
 Dedup contract: syntax owns module examples, debugging owns the error taxonomy, build owns every `ant`/`mvn` line, parser/XML and toolbox facts stay isolated, and this skill owns the shared inventories in `references/`.
 
