@@ -272,6 +272,14 @@ arm and core header blocks gap indented
 /sur/types.hoon               :: Shared type definitions
 ```
 
+### Arms
+
+Do not propogate unnecessary arms.
+Short helper arms only called from one other arm should be collapsed into the calling arm.
+
+The exception is calling single use arms from ?- or ?+ where it makes sense to have boundaries.
+
+
 ## 5. Idiomatic Patterns
 
 ### Pattern 1: Safe APIs
