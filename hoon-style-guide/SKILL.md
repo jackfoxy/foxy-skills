@@ -139,6 +139,11 @@ false-branch
 ```
 
 ### Tall Form Cell Alignment
+Tall form is the default for cell construction. Use wide form only when the
+complete expression fits on one 80-character line — and when it does, prefer
+it: [%pass wire %arvo %b %wait when] beats a four-line :*. Apply the rule
+consistently within a file; a :* for one card and […] for its neighbour
+is noise.
 
 align all cell items to the same column
 ```hoon
@@ -279,6 +284,11 @@ Short helper arms only called from one other arm should be collapsed into the ca
 
 The exception is calling single use arms from ?- ?+ ?: ?. ?^ ?@ ?+ or ?~ where it makes sense to have boundaries.
 
+Do not introduce an arm whose only job is to build a cell. A helper arm earns
+its place only when it (a) has more than one caller, or (b) is called from a
+?-/?+/?:/?./?^/?@/?~ branch and materially reduces nesting.
+Before adding one, count lines both ways: a five-line arm that saves one line
+per call site at six call sites is not a win.
 
 ## 5. Idiomatic Patterns
 
@@ -289,6 +299,14 @@ for lookups, parsing, and optional values; reserve crashes for invariant
 violations. For container-specific access rules, use `data-structures`.
 
 ### Pattern 2: Standard Library Operations
+
+| Intent | Use | Never |
+|---|---|---|
+| map, dropping `~` results | `murn` | `turn` + `skim` + `?>` |
+| all / any | `levy` / `lien` | `?&`/`?\|` recursion; `?=(^ (skim …))` |
+| concat-map | `zing` + `turn` | `weld` in a `\|-` (but see "Recursion and wet gates" below) |
+| append one element | `snoc` | `(weld a ~[b])` |
+| prefix test | `=(a (scag (lent a) b))` | element-wise `\|-` |
 
 ```hoon
 ::  ✓ Good: use a clear stdlib traversal
@@ -345,6 +363,62 @@ put detailed debugging workflows in `debugging-specialist-assistant`.
   (~(get by config) key)
 ```
 
+### Pattern 6: quip threading in Gall agents
+
+```hoon
+::  ✓ Good
+=^  cards  state  (handler args state now.bowl our.bowl)
+[cards this]
+
+::  ✗ Bad
+=/  result=(quip card app-state)  (handler args state now.bowl our.bowl)
+:_  this(state +.result)
+-.result
+```
+
+`=^` writes through the `=*  state  -` alias and `this` picks up the updated
+core, so `this(state …)` is redundant. Likewise `` `this(state state) ``
+after a `=.` on `state` is a no-op — write `` `this ``.
+
+**Caveat — these two forms are not interchangeable under refinement.**
+
+`this(state x)` resolves `this` through the `+*` alias, which evaluates `.`
+in the *core's own* subject and therefore never sees a `?~`/`?^`/`?=`
+refinement made in the arm body. `=^` / `=.` expand to `%=(. state x)` and
+write against the **current, refined** subject. So converting
+`this(state +.result)` to `=^ cards state` is only safe when nothing earlier
+in the arm has narrowed a slot of `state` — see "Type narrowing and
+write-back" below.
+
+### Pattern 7: `?-` over a loob
+
+A `?-` with `%.y`/`%.n` arms costs four lines to express a two-way branch.
+Use `?:  ?=(%.n -.x)` and let the success path continue at the outer
+indentation — this turns nested `each`-handling into a flat sequence of
+guards.
+
+```hoon
+::  ✓ Good
+?:  ?=(%.n -.loaded)  (error-cards p.loaded)
+(success-cards p.loaded)
+
+::  ✗ Bad
+?-  -.loaded
+  %.n  (error-cards p.loaded)
+  %.y  (success-cards p.loaded)
+==
+```
+
+### Pattern 8: list-shape destructuring
+
+Prefer one `?=` over a chain of `?~`/`i`/`t` bindings.
+
+```hoon
+::  ✓ Good — "at least four elements", then index directly
+?.  ?=([* * * * *] commands)  ~
+(f i.commands i.t.commands i.t.t.commands i.t.t.t.commands)
+```
+
 ## 6. Anti-Patterns to Avoid
 
 ### Anti-Pattern 1: Magic Numbers
@@ -382,6 +456,12 @@ word order, not illegal characters (for those, see §1).
 ++  get-account
 ++  remove-user
 ```
+
+### Anti-Pattern 3: duplicated tail in sibling branches
+
+If two branches of a `?^`/`?:` end in the same expression, hoist it into a
+`=/` before the test. Two `?-` arms with identical bodies should be one
+`?(%a %b)` arm.
 
 ## 7. Testing and Examples
 
@@ -480,3 +560,78 @@ name=value
 :-  b
 c
 ```
+
+ ### Recursion and wet gates
+
+Standard-library traversals — `weld`, `turn`, `zing`, `skim`, `sort` — are
+wet gates. A self-reference (`$` or `^$`) appearing inside their arguments is
+mulled against a type that is still being computed, and the compiler reports
+`fuse-loop` / `mint-loop`. The `^-` casts on the trap and on the inner gate
+do **not** help: goal propagation does not survive a wet-gate mull.
+
+Inside a recursive traversal, bind every recursive result to an explicitly
+typed `=/` before passing it to a wet gate.
+
+```hoon
+::  ✗ Bad — fuse-loop
+%+  weld  here
+%-  zing
+%+  turn  names
+|=  name=@ta
+^-  (list path)
+^$(clay-path (snoc clay-path name))
+
+::  ✓ Good
+=/  children=(list path)
+  |-  ^-  (list path)
+  ?~  names  ~
+  =/  head=(list path)  ^$(clay-path (snoc clay-path i.names))
+  =/  rest=(list path)  $(names t.names)
+  (weld head rest)
+(weld here children)
+```
+
+This is the one place where the "prefer stdlib traversals over `|-`" rule in
+the style guide's §5 is overridden. `turn`/`murn`/`levy`/`lien` remain
+correct for any
+traversal that is *not* self-recursive.
+
+### Type narrowing and write-back
+
+`?~`/`?^`/`?=` narrow the tested wing for the rest of the branch, and the
+narrowing propagates to every enclosing structure — testing
+`readiness.transient.state` narrows `state` itself. Any later `=.` or `=^`
+that writes a *wider* value into `state` then fails:
+
+```
+nest-fail
+-have.%~
+- need  [%~ u [job=[…] failures=@ud retry-wire=/]]
+```
+
+The rule: **copy the slot into a local, test the copy.**
+
+```hoon
+::  ✗ Bad — narrows +state, so the later =^ cannot write it back
+?~  readiness.transient.state  `this
+=/  pending=pending-readiness:web  u.readiness.transient.state
+…
+=^  cards  state  (advance-readiness pending %.n state now.bowl our.bowl)
+
+::  ✓ Good
+=/  current=(unit pending-readiness:web)  readiness.transient.state
+?~  current  `this
+=/  pending=pending-readiness:web  u.current
+…
+=^  cards  state  (advance-readiness pending %.n state now.bowl our.bowl)
+```
+
+Do not paper over it with `^-(wide-type x)` re-binding tricks; copy-then-test
+says what it means, and deserves a one-line comment.
+
+Corollary: when an arm both clears a slot (`=.  active.transient.state  ~`)
+and calls a handler that returns fresh state, **do not** write the result
+back with `=^`. Bind it to `=/  next=(quip card app-state)` and return
+`[… -.next]` / `+.next`. The clear is a write into the slot, and the
+handler's product is wider than what the surrounding branch has narrowed the
+ slot to.
