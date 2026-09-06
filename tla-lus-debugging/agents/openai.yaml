@@ -1,0 +1,4 @@
+interface:
+  display_name: "tla-lus Debugging"
+  short_description: "Diagnose %tla-lus rejections, errors, violations and traces"
+  default_prompt: "Use $tla-lus-debugging to diagnose this %tla-lus failure or trace."

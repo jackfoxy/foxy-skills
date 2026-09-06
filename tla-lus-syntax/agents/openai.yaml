@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Syntax"
+  short_description: "Read, write and validate TLA+ the %tla-lus parser accepts"
+  default_prompt: "Use $tla-lus-syntax to check or write TLA+ syntax, operators and levels."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "tla-lus Internals"
+  short_description: "The pure lib/ pipeline, job kernel, and Gall shell"
+  default_prompt: "Use $tla-lus-internals to understand or modify the %tla-lus implementation."

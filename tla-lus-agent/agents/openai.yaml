@@ -1,0 +1,4 @@
+interface:
+  display_name: "tla-lus Agent API"
+  short_description: "Operate the %tla-lus Gall agent: pokes, scries, jobs"
+  default_prompt: "Use $tla-lus-agent to submit, monitor, and read %tla-lus jobs."

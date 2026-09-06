@@ -1,0 +1,4 @@
+interface:
+  display_name: "tla-lus Dev Workflow"
+  short_description: "Deploy, test, and gate the %tla-lus desk"
+  default_prompt: "Use $tla-lus-dev-workflow to build, deploy, test or gate the %tla-lus desk."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "TLA+ Specification"
+  short_description: "Expert TLA+ modeling, safety, liveness, refinement"
+  default_prompt: "Use $tla-lus-specification to design, review, or repair this TLA+ specification."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "tla-lus Standard Library"
+  short_description: "Standard modules and the stdops override registry"
+  default_prompt: "Use $tla-lus-stdlib for standard-module operators and overrides."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "tla-lus Parity"
+  short_description: "The Java oracle, goldens, and the parity ledger"
+  default_prompt: "Use $tla-lus-parity to judge a divergence from the Java TLA+ tools."

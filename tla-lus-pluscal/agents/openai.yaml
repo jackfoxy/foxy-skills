@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlusCal"
+  short_description: "PlusCal authoring; translation not available in %tla-lus"
+  default_prompt: "Use $tla-lus-pluscal for PlusCal algorithms and translation status."

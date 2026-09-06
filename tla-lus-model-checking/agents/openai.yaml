@@ -1,0 +1,4 @@
+interface:
+  display_name: "tla-lus Model Checking"
+  short_description: "Configure and run %check on the %tla-lus engine"
+  default_prompt: "Use $tla-lus-model-checking to configure, run, and interpret a %tla-lus model check."

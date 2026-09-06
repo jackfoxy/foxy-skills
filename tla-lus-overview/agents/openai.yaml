@@ -1,0 +1,4 @@
+interface:
+  display_name: "tla-lus Overview"
+  short_description: "Orientation and routing for the %tla-lus Gall agent"
+  default_prompt: "Use $tla-lus-overview to orient in the %tla-lus toolchain and route to the right skill."
