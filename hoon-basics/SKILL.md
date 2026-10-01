@@ -297,6 +297,85 @@ This applies any time you want to access a wing (`+`, `-`, `p`, `q`, a face name
 +:(apply-resolved-scalar (~(got by rs) sname) [%indexed-row key.row data.row])
 ```
 
+12. **Dot wings reach through legs, not arms**: `face.x` finds `face` inside `x` only when `x` is a leg (a face bound in the subject). When `x` is an arm, such as a fixture `++` in a test core, the lookup fails with `-find.face.x`. Use `face:x`, which runs the arm and then looks up the face, or bind the arm to a typed face first.
+
+```hoon
+++  payload
+  ^-  simple-payload:http
+  (respond 200 asset)
+::
+::  WRONG — -find.response-header.payload
+response-header.payload
+
+::  CORRECT — run the arm, then take the face
+response-header:payload
+
+::  CORRECT — bind the arm, then use dot on the leg
+=/  sent=simple-payload:http  payload
+response-header.sent
+```
+
+The same holds for `%=` (`x(face v)`): on a leg it changes the leg's value, but on an arm it changes `face` in the **surrounding core** and then re-runs the arm, so a face that exists only in the arm's product fails with `-find`, or `-tack` / `-find` together for a nested wing such as `spec(files.app-config x)`. Bind the product first.
+
+```hoon
+++  policy  ^-  policy:ufiles  (make-policy:ufiles files /data/probe &)
+::
+::  WRONG — %= edits the core, which has no `strict`
+policy(strict |)
+
+::  CORRECT
+=/  base=policy:ufiles  policy
+base(strict |)
+```
+
+13. **Reading a face across a fork**: on a union such as `card:agent:gall` (`%pass`/`%slip`/`%give`), `p.x` fails with `-find.p.x` / `find-fork`, even though every branch has a `p`. Narrow the value first. Checking only a list's length (`?=([* * ~] cards)`) does not narrow its items.
+
+```hoon
+::  WRONG — find-fork
+?>  ?=([* *] cards)
+=(timeout p.i.cards)
+
+::  CORRECT — narrow the item, then read p
+?>  ?=([[%pass *] *] cards)
+=(timeout p.i.cards)
+```
+
+14. **`{` in a tape interpolates**: inside `"…"`, `{` starts an embedded expression (`"total {<n>}"`), so a literal brace is a syntax error pointing just past it, e.g. `syntax error at [2.006 47]`. Escape it as `\{`. A cord (`'…'`) does not interpolate, so it needs no escape. This bites most often when a test searches generated JavaScript or CSS for a needle.
+
+```hoon
+::  WRONG — syntax error: `{text, …}` parses as an interpolation
+(find "docs.create('script', {text})" script)
+
+::  CORRECT
+(find "docs.create('script', \{text})" script)
+```
+
+15. **Import runes come in a fixed order**: `/-` `/+` `/=` `/~` `/%` `/$` `/*`. Clay reads them in that order and cannot go back, so a line out of order ends the imports and is parsed as Hoon. A `/=` after a `/*` fails to build with `-find.face` pointing at the face on the import line, not with a syntax error.
+
+```hoon
+::  WRONG — -find.agent at the `/=` line
+/+  *test
+/*  favicon  %ico  /favicon/ico
+/=  agent  /app/my-agent
+
+::  CORRECT
+/+  *test
+/=  agent  /app/my-agent
+/*  favicon  %ico  /favicon/ico
+```
+
+16. **A `/*` import carries the mark's sample face**: the value is typed by `+<` of the mark's door, face included. With `|_  dat=octs` in `mar/ico.hoon`, `favicon` is `dat=[p=@ud q=@]`, and `dat` hides `q`: `q.favicon` fails with `-find.q.favicon`. Passing the whole value works, because faces don't affect nesting. Cast to read inside it.
+
+```hoon
+/*  favicon  %ico  /favicon/ico
+::
+::  WRONG — -find.q.favicon
+q.favicon
+
+::  CORRECT — the cast drops the face
+q:`octs`favicon
+```
+
 ## Fast Lookups
 
 ### Arithmetic

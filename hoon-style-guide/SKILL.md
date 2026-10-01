@@ -596,6 +596,46 @@ the style guide's §5 is overridden. `turn`/`murn`/`levy`/`lien` remain
 correct for any
 traversal that is *not* self-recursive.
 
+#### Chained wet gates, no recursion
+
+A `fuse-loop` can also occur with no `$` at all, when wet gates are nested
+inline several deep. The inner gate below has a `^-` cast, yet the mull
+of this chain looped (`mull-grow` / `fuse-loop`):
+
+```hoon
+::  ✗ Bad — fuse-loop: silt of zing of turn, whose gate branches to ~
+::  or to another turn over the wet +scag
+=/  dirs=(set path)
+  %-  silt
+  %-  zing
+  %+  turn  files
+  |=  rel=path
+  ^-  (list path)
+  ?:  (gth low high)  ~
+  (turn (gulf low high) |=(n=@ud (scag n rel)))
+```
+
+Give each wet-gate product a typed `=/` before the next wet gate sees it,
+and cast the innermost wet product (`` `path`(scag n rel) ``). To build a
+set from a list of lists, fold with `roll` and `~(gas in set)` rather than
+`(silt (zing (turn …)))`:
+
+```hoon
+::  ✓ Good
+=/  dirs=(set path)
+  %+  roll  files
+  |=  [rel=path seen=(set path)]
+  ^-  (set path)
+  ?:  (gth low high)  seen
+  =/  more=(list path)
+    (turn (gulf low high) |=(n=@ud `path`(scag n rel)))
+  (~(gas in seen) more)
+```
+
+A single `(zing (turn xs gate))` over a simple gate is fine. Suspect the
+chain when three or more wet gates nest and an inner gate branches between
+`~` and another wet product.
+
 ### Type narrowing and write-back
 
 `?~`/`?^`/`?=` narrow the tested wing for the rest of the branch, and the
@@ -635,3 +675,29 @@ back with `=^`. Bind it to `=/  next=(quip card app-state)` and return
 `[… -.next]` / `+.next`. The clear is a write into the slot, and the
 handler's product is wider than what the surrounding branch has narrowed the
  slot to.
+
+#### Narrowed lists and wet list gates
+
+`?~  xs` (or `?=(^ xs)`) narrows `xs` to a non-empty cell for the rest of the
+branch. Wet list gates whose product is cast `^+` to their list argument
+(`+scag`, `+slag`, `+flop`, …) then no longer type-check: their `~` case
+cannot fit the narrowed type.
+
+```
+nest-fail
+-need.[i=@ta ?(t=%~ t=[i=@ta t=/])]
+-have.%~
+```
+
+When the list will be passed on whole, test emptiness without narrowing, or
+narrow a copy.
+
+```hoon
+::  ✗ Bad — nest-fail inside +scag
+?~  rel  ~
+=(scope (scag (lent scope) rel))
+
+::  ✓ Good
+?:  =(~ rel)  ~
+=(scope (scag (lent scope) rel))
+```

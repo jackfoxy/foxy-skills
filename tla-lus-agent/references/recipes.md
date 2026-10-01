@@ -175,9 +175,11 @@ job's own diagnostics record it.
 
 ```
 :tla-lus|submit ~.job-1 %check       ::  a DEMO request (empty module) — copy as a template
-+tla-lus/status 'job-1'
-:tla-lus|cancel 'job-1'
++tla-lus/status ~.job-1
+:tla-lus|cancel ~.job-1
 ```
+
+The id argument is a `@ta`, not a cord — `~.job-1`, not `'job-1'`.
 
 `gen/tla-lus/status.hoon` is also the reference for the scry path shape,
 including the trailing `/noun` mark.

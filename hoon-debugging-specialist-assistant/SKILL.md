@@ -143,6 +143,31 @@ do-kung-foo
 do-foo
 ```
 
+#### mull-grow nest-fail after `?~` narrowing
+
+`?~ x` narrows `x` to a non-empty list. A wet list gate that recurses into
+the tail, such as `snag`, then fails with `mull-grow` and `nest-fail`: the
+`need` is a cell `[i=… t=…]`, the `have` is `%~`. Test emptiness with
+`=(~ x)`, which does not narrow.
+
+```
+mull-grow
+- need
+[ i=[g=… c=#3] ?(t=%~ …) ]
+-have.%~
+nest-fail
+```
+
+```hoon
+::  Wrong: kids is narrowed to non-empty; snag's tail recursion fails
+?~  kids  ""
+(snag (dec (lent kids)) kids)
+
+::  Fix
+?:  =(~ kids)  ""
+(snag (dec (lent kids)) kids)
+```
+
 #### mint-vain (Unused Value)
 ```
 mint-vain
@@ -206,6 +231,20 @@ ford: %slim failed
 2. Verify face is introduced before use
 3. Check for shadowing (redefined faces)
 4. Ensure proper scoping
+
+#### find at a file import
+```
+clay: %a build failed [%desk … /tests/app/my-agent/hoon]
+/tests/app/my-agent/hoon::[5 5].[5 10]>
+-find.agent
+```
+**Cause**: an import line out of order (hoon-basics gotcha 15). The spot
+points at the import's face, so the import line was parsed as Hoon, not as
+an import. The imported file itself still builds on its own
+(`-build-file`). Order the runes `/-` `/+` `/=` `/~` `/%` `/$` `/*`.
+
+`-find.q.x` on a `/*` import that is plainly `octs` is the mark's sample
+face hiding the field (hoon-basics gotcha 16): cast first, ``q:`octs`x``.
 
 ### Runtime Errors
 
