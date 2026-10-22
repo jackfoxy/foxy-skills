@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Function Generation"
+  short_description: "Fun, Function, CoArbitrary: random showable shrinkable functions"
+  default_prompt: "Use $qik-chk-functions to quantify over functions in a QuickCheck property."

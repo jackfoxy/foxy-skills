@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Property Design"
+  short_description: "Choose and strengthen properties: models, metamorphic, invariants"
+  default_prompt: "Use $qik-chk-property-design to decide which properties to write for this code."

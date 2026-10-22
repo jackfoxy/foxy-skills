@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Property Combinators"
+  short_description: "Exact semantics of ==>, forAll, ===, .&&., .||., once, expectFailure"
+  default_prompt: "Use $qik-chk-properties to explain or write these QuickCheck property combinators."

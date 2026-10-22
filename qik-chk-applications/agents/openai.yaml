@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Applications"
+  short_description: "Recipes for parsers, data structures, numerics, interpreters"
+  default_prompt: "Use $qik-chk-applications to find QuickCheck properties for this kind of component."

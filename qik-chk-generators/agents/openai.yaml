@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Generators"
+  short_description: "Gen, Arbitrary instances, size, modifiers, generator recipes"
+  default_prompt: "Use $qik-chk-generators to write a QuickCheck generator or Arbitrary instance."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck API Index"
+  short_description: "Every QuickCheck 2.19 export with signature, owner, source link"
+  default_prompt: "Use $qik-chk-api-index to look up this QuickCheck function, type, or module."

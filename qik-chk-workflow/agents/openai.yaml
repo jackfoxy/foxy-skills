@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Project Workflow"
+  short_description: "cabal test suites, tasty, hspec, regressions, CI, compatibility"
+  default_prompt: "Use $qik-chk-workflow to integrate QuickCheck properties into this project and CI."

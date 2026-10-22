@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Runner"
+  short_description: "quickCheckWith, Args, Result, replay, sizes, timeouts, TH runners"
+  default_prompt: "Use $qik-chk-running to run, configure, or replay these QuickCheck properties."

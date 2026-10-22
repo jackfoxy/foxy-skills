@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck History and Ecosystem"
+  short_description: "QuickCheck 1, release history, migration, papers, related tools"
+  default_prompt: "Use $qik-chk-history to explain QuickCheck's history, versions, papers, or relatives."

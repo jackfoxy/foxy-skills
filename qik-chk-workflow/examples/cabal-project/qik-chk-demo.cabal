@@ -1,0 +1,19 @@
+cabal-version:      2.4
+name:               qik-chk-demo
+version:            0.1.0.0
+synopsis:           Minimal package with a QuickCheck test suite (qik-chk-workflow example)
+build-type:         Simple
+
+library
+  hs-source-dirs:   src
+  exposed-modules:  RunLength
+  build-depends:    base >=4.14 && <5
+  default-language: Haskell2010
+
+test-suite properties
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   test
+  main-is:          Main.hs
+  build-depends:    base, qik-chk-demo, QuickCheck ==2.19.*
+  default-language: Haskell2010
+  ghc-options:      -threaded -rtsopts

@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Debugging"
+  short_description: "Diagnose gave up, vacuous passes, hangs, flaky and huge failures"
+  default_prompt: "Use $qik-chk-debugging to diagnose this QuickCheck result."

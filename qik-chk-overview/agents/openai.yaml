@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Overview"
+  short_description: "Start here: route QuickCheck questions, learning paths, provenance"
+  default_prompt: "Use $qik-chk-overview to find the right QuickCheck skill or learning path for this."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Coverage and Distribution"
+  short_description: "label, classify, tabulate, cover, checkCoverage, labelledExamples"
+  default_prompt: "Use $qik-chk-distribution to measure or enforce what these QuickCheck tests cover."

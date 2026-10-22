@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Monadic and Stateful Testing"
+  short_description: "ioProperty, PropertyM, ST, model-based command-sequence testing"
+  default_prompt: "Use $qik-chk-monadic-state to test this effectful or stateful code with QuickCheck."

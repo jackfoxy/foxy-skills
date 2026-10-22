@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Foundations"
+  short_description: "What properties are, a first QuickCheck run, how testing works"
+  default_prompt: "Use $qik-chk-foundations to explain QuickCheck and write a first property."

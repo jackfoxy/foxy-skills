@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Internals"
+  short_description: "Implementation, upstream tests, CI, contributing to QuickCheck"
+  default_prompt: "Use $qik-chk-internals to explain how QuickCheck implements this or to work on QuickCheck."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "QuickCheck Shrinking"
+  short_description: "shrink, custom shrinkers, minimal counterexamples, shrink search"
+  default_prompt: "Use $qik-chk-shrinking to write a shrinker or explain this counterexample's shrinking."
