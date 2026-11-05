@@ -51,6 +51,26 @@ twelve `Bags` operators (`SubBag` evaluates from its body, as at the pin);
 RandomElement`; ten `TLCExt` operators including `CounterExample`; and the three
 `Randomization` operators.
 
+R4 additions (`desk/doc/compatibility.md` §Release R4.2*):
+
+- `Print`/`PrintT` are live: the job stores the lines in its `%output` text
+  artifact (capped at 1 MB), the console path prints them inline.
+- `Json`: `ToJson`, `ToJsonArray`, `ToJsonObject` at parity;
+  `JsonSerialize`/`ndJsonSerialize` are TRUE and their file becomes a
+  `file-<path>` artifact; `JsonDeserialize`/`ndJsonDeserialize` are refused by
+  name (a run reads only the sources its request names).
+- `TLCGet("config")` is the run's configuration record (`install` is
+  `"%tla-lus"`); `TLCGet("-D<key>")` reads `request.props`, and
+  `tlc2.tool.impl.Tool.cdot` = `"true"` enables `\cdot`.
+- CommunityModules (not vendored: put them on a `%clay` bundle's search
+  roots): the operators the tlaplus-Examples reach are native overrides
+  (`tlc-module-community`); `SVG!NodeOfRingNetwork`,
+  `SVG!NodesOfDirectedMultiGraph`, `Statistics!ChiSquare` and
+  `VectorClocks!CausalOrder` are refused by name. `IOUtils!IOEnv` reads
+  `request.env`; `IOExec` and friends, `Serialize`/`Deserialize` and the `CSV`
+  readers/writers are refused by name, as are `TLCGet("duration")` and
+  `TLC!JavaTime` (a reproducible run observes no clock or process).
+
 ## Three things that surprise people
 
 1. **Strings and model values order lexicographically**, not by Java intern

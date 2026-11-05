@@ -12,8 +12,9 @@ paste the literal:
 ::  [1.000.000 64 100.000 1.000 ~m10 1.000.000 1.000.000]
 ```
 
-A `request` has **five** fields — `[op src limits write promote]`. Omitting
-`promote` is the most common hand-written mistake.
+A `request` has **seven** fields — `[op src limits write promote env props]`
+(R4.2c/g added `env` and `props`). Omitting a trailing one is the most common
+hand-written mistake: the mark's clam rejects the noun.
 
 ## 1. Inline safety check
 
@@ -33,6 +34,8 @@ Inv  == x < 4
          limits=[1.000.000 64 100.000 1.000 ~m10 1.000.000 1.000.000]
          write=~
          promote=~
+         env=~
+         props=~
      ==
 :tla-lus &tla-lus-action [%submit ~.counter req]
 .^((unit job) %gx /=tla-lus=/job/counter/noun)
@@ -84,7 +87,7 @@ back-to-state marker.
 =req :*  op=[%check [| | | | ~ | ~ [%simulate 987.654.321 100 20 |]]]
          src=[%inline 'Counter' (malt ~[['Counter' spec]]) `cfg]
          limits=[1.000.000 64 100.000 1.000 ~m10 1.000.000 1.000.000]
-         write=~  promote=~
+         write=~  promote=~  env=~  props=~
      ==
 ```
 
@@ -106,7 +109,7 @@ Store modules under the `%tla` mark with lowercased file names
 =req :*  op=[%check [| | | | ~ | ~ [%exhaustive & 0]]]
          src=[%clay our %myspecs da+now 'Counter' `/spec-cfg/txt ~[/]]
          limits=[1.000.000 64 100.000 1.000 ~m10 1.000.000 1.000.000]
-         write=~  promote=~
+         write=~  promote=~  env=~  props=~
      ==
 ```
 
@@ -127,6 +130,8 @@ Store modules under the `%tla` mark with lowercased file names
          limits=[1.000.000 64 100.000 1.000 ~m10 1.000.000 1.000.000]
          write=`[%base /tlaout]
          promote=~
+         env=~
+         props=~
      ==
 ```
 

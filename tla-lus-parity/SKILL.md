@@ -24,10 +24,10 @@ output, with the corresponding Java tool.
 Any intentional divergence is recorded in `desk/doc/compatibility.md`, carries a
 ledger row, and is pinned by a test that fails if *either* side changes.
 
-Current state: **134 rows, 0 owed — closed 2026-09-05 by R3.0d.**
-`release-gate.sh` PASSES every clause; `r3-acceptance.py --suite-log` prints
-**R3 ACCEPTED** on 5/5 (2179 suite arms, 0 failed). Evidence: **1277 compared
-cases, 22 oracle-only** (`desk/doc/evidence-counts.md`, generated).
+Current state: **140 rows, 0 owed, 15 approved differences (2026-11-05,
+R4.5.1).** R3 closed the ledger at 134 (R3 ACCEPTED on 5/5); R4 widened the
+corpus to tlaplus-Examples. Evidence counts: `desk/doc/evidence-counts.md`
+(generated; never quote a number from memory).
 
 ## Is this divergence a bug?
 
@@ -48,7 +48,7 @@ Ask in this order:
 
 Only then is it a bug.
 
-## The ten approved differences, in one line each
+## The fifteen approved differences, in one line each
 
 | Row | Difference |
 |---|---|
@@ -63,10 +63,17 @@ Only then is it a bug.
 | `tlc-coverage` | five line kinds minus two — no per-`VARIABLE` HyperLogLog estimate, no per-node sub-expression lines, and **no block at all** on a run that prints a counterexample |
 | `cfg-internal-kw` | `_PERIODIC` refused by name: `doPeriodicWork` runs on tlc2's wall-clock thread (1 677 194 states one run, 1 740 872 the next) |
 | `tlc-value-order`, `tlc-uniquestring` | (cause) no intern table exists; strings are atoms |
+| `tlc-var-order` (R4.2t) | a state's variables print in **declaration** order, not the Hashtable enumeration of SANY's context; verdicts and counts unaffected |
+| `tlc-fp-identity` (R4.P5c) | a safety or DFID search keys its visited set on a 128-bit hash of the equality key, so two states whose FP64 fingerprints collide stay apart here (tlc2 merges them); FP64 stays wherever a fingerprint is observable |
+| `tlc-module-community` (R4.2b) | CommunityModules operators are native overrides; `SVG!NodeOfRingNetwork`, `SVG!NodesOfDirectedMultiGraph`, `Statistics!ChiSquare`, `VectorClocks!CausalOrder` are refused by name |
+| `sem-diag-location` (R4.5.1) | SANY's 4201 Multiply-defined and 4801 messages name the other symbol's location on a second line; the port's message is the first line |
+| `sem-substin-zero` (R4.5.1) | an INSTANCE of a parameterless module dumps `substin subs=0` around each body; SemDump has no SubstIn node (dump-only) |
 
-The ten rows are exactly: `tlc-driver`, `tlc-dfid`, `tlc-eval-cst`,
+The fifteen rows are exactly: `tlc-driver`, `tlc-dfid`, `tlc-eval-cst`,
 `tlc-value-model`, `cfg-internal-kw`, `tlc-value-order`, `tlc-module-tlc`,
-`tlc-live-product`, `tlc-coverage`, `tlc-uniquestring`. The table above
+`tlc-module-community`, `tlc-live-product`, `tlc-fp-identity`, `tlc-coverage`,
+`tlc-var-order`, `tlc-uniquestring`, `sem-diag-location`, `sem-substin-zero`
+(`python3 tools/check-parity.py` prints the histogram). The table above
 collapses `tlc-value-order` and `tlc-uniquestring` into one line (cause and
 effect) and splits `tlc-module-tlc`'s two clauses.
 

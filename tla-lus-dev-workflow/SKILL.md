@@ -58,8 +58,9 @@ python3 tools/check-parity.py     # ledger well-formed; how many rows still owed
 bash tools/release-gate.sh        # PASSES as of 2026-09-05 (R3.0d)
 ```
 
-Current: **134 rows, 0 owed**; release gate green; `r3-acceptance.py
---suite-log` prints **R3 ACCEPTED** on 5/5 (2179 suite arms, 0 failed).
+Current: **140 rows, 0 owed** (2026-11-05); R3 was ACCEPTED on 5/5; R4's
+acceptance is `tools/r4-acceptance.py` (R4.5.2) over the Examples censuses
+(`tools/examples.py`, `references/commands.md`).
 
 ## Environment
 

@@ -202,6 +202,29 @@ Sail (stylized as "~[]") is Hoon's embedded HTML templating language, allowing y
 
 ## 5. Styling
 
+### Targeted Layout and Size Changes
+
+When asked to make one element match another, identify the element to change
+and the reference whose existing appearance must be preserved. For example,
+"reduce Help to the height of the buttons to its left" means shrink Help;
+enlarging the other buttons fails the request even if all heights become equal.
+
+- Inspect the rendered target and reference before editing. Compare their
+  border-box dimensions and computed padding, line-height, borders, and
+  min-height; equal CSS declarations do not prove equal rendered sizes.
+- Keep the reference controls unchanged. Avoid changing a parent flex/grid
+  alignment or a shared button selector when only one control should change:
+  `align-items: stretch` can enlarge siblings to the tallest control.
+- Prefer a narrowly scoped CSS correction. Add JavaScript measurement or a
+  `ResizeObserver` only when the reference genuinely changes dynamically and
+  CSS cannot express the relationship; do not use it to bypass diagnosis.
+- Verify the target matches the reference after the change and the reference
+  still has its original dimensions at the same viewport. For header dividers,
+  compare border positions as well as heights. Check wrapping when relevant.
+- Hoon compilation and JavaScript syntax checks do not verify appearance.
+  If rendered verification is unavailable, state that limitation rather than
+  claiming the controls now visually match.
+
 ### Inline Styles
 
 ```hoon

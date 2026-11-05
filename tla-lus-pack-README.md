@@ -2,7 +2,9 @@
 
 Eleven skills for the `%tla-lus` Gall agent — the native, headless TLA+
 toolchain for Urbit (`~/gitrepos/tla-lus`). Written 2026-09-06 against R3
-(ledger closed, 134 rows, 0 owed).
+(ledger closed, 134 rows, 0 owed); updated 2026-11-05 for R4 (the
+tlaplus-Examples corpus: ledger 140 rows, 0 owed; acceptance pending
+R4.5.2–R4.5.3).
 
 This pack **replaces** the `tlaplus-*` pack in `/mnt/mars/gitrepos/foxy-skills/`
 (symlinked into `~/.claude/skills/`), which is aimed at the Java

@@ -62,6 +62,21 @@ classified from the repo's own `manifest.json`s. Every module lands in
 `desk/test-data/tier2/inventory.txt`; the classification rules are **total**,
 so an upstream-added spec drifts the frozen inventory and `--check` catches it.
 
+## The Examples runner (R4) — on a live ship, through the public wire
+
+```bash
+python3 tools/examples-oracle.py --check        # the pin's goldens (SANY, tlauc+SANY, tlc2)
+python3 tools/examples.py --stage DIR           # the %tla-ex desk: corpus, unicode/, apalache/ community/ tlapm/, licenses
+python3 tools/examples.py --parse [--unicode] [--only S] [--parse-secs N]   # clauses 1 and 8a
+python3 tools/examples.py --run [--size small|large] [--only S] [--wall S] [--budget N] [--census FILE]
+python3 tools/ship/sem-identity.py              # clause 8b: graph identity, dojo generator gen/sem-identity
+```
+
+Every census is append-only JSON lines, so a run resumes. The runner submits
+`%analyze`/`%check` exactly as a caller would (conn.sock `%ovum` poke, `%peek`
+scry) and a watchdog bounds a stuck slice. **Long runs need the user's
+approval first**; never SIGINT a running job by hand (set the wall instead).
+
 ## Tier 3 — a performance report, never a gate
 
 ```bash

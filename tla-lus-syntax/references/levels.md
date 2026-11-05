@@ -46,7 +46,22 @@ text and a source span. See `tla-lus-debugging`.
   (`Op(_, _)`).
 - Arity is checked: applying a 2-ary operator to 1 argument is a semantic
   error, not a partial application.
-- Duplicate declarations and shadowing are reported.
+- **No shadowing** (SANY's `addSymbol`, ported in R4.5.1). A bound variable,
+  formal parameter or `LAMBDA` parameter whose name is already visible -- a
+  `VARIABLE`, a definition, an import, an enclosing binder -- is EC 4201
+  "Multiply-defined symbol". A definition or `LET` definition with a visible
+  name is 4201 "Operator X already defined or declared", plus 4201
+  Multiply-defined for another kind or arity (else the 4801 warning). The
+  first symbol is kept and uses resolve to it. A disjoint sibling scope may
+  reuse a name: `(\E i : P) /\ (\E i : Q)` and `l \in {l \in S : P}` (a
+  range is generated before its variables are bound) are legal.
+- **Order is checked** (R4.2at): a use of a definition, declaration, theorem
+  or instance that comes later in the module, or later in the same `LET`, is
+  4200 "Unknown operator". A function definition sees its own name; an
+  operator only through `RECURSIVE`.
+- An inner module is analyzed inside its parent: it sees the parent's
+  earlier symbols, its errors are the parent's, and its own `EXTENDS` do not
+  reach the parent.
 
 ## `EXTENDS` versus `INSTANCE`
 

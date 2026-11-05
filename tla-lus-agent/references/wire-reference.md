@@ -30,7 +30,9 @@ there. This file is the working subset.
 ## Request
 
 ```hoon
-+$  request  [=op src=source-bundle =limits write=(unit write-target) promote=(set diag-code)]
++$  request  [=op src=source-bundle =limits write=(unit write-target) promote=(set diag-code) env=(map @t @t) props=(map @t @t)]
+::  env (R4.2c): the environment IOUtils!IOEnv reads, ~ = empty
+::  props (R4.2g): -D properties: TLCGet("-D<key>"), tlc2.tool.impl.Tool.cdot
 +$  op
   $%  [%translate opts=pcal-opts]      ::  typed rejection today
       [%analyze flags=analyze-flags]

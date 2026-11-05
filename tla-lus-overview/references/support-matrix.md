@@ -20,6 +20,9 @@ both directions, so the table cannot drift silently.
 | Sources | `%inline` bundles **and** `%clay` bundles (async load, pinned revision, escape-free paths) |
 | Output | typed `%report` / `%trace` / `%violations` / `%sources` artifacts; optional Clay **write-back** via `write=(unit write-target)` |
 | Standard modules | `Naturals`, `Integers`, `Reals`, `Sequences`, `FiniteSets`, `Bags`, `TLC`, `TLCExt`, `Randomization`, `RealTime`, `Json`, `Toolbox` (vendored MIT text; overrides in `lib/stdops`) |
+| Library modules (R4) | CommunityModules, the TLAPS library and `Apalache.tla`, read from a `%clay` bundle's search roots (not vendored); the CommunityModules operators the Examples reach have native overrides (`tlc-module-community`), four refused by name |
+| Run inputs (R4) | `request.env` (`IOUtils!IOEnv`), `request.props` (`-D` properties: `TLCGet("-Dk")`, `tlc2.tool.impl.Tool.cdot`), `Print`/`PrintT` lines in a `%output` artifact, `JsonSerialize`/`ndJsonSerialize` files as `file-<path>` artifacts |
+| Unicode (R4.4) | every spelling `tlauc --skip numsets` writes; the graph equals the ASCII original's |
 
 ## Refused at submit (`%rejected`, before a job exists)
 

@@ -73,11 +73,26 @@ find the authoritative document for a claim.
    Clay — the scaffold gate enforces it. Sources arrive asynchronously through
    the `%modules` stage.
 
-## Current status (2026-09-06, R3 complete)
+## Current status (2026-11-05, R4 closing)
 
-- Parity ledger: **134 rows, 0 owed — closed 2026-09-05 by R3.0d**.
-  `tools/release-gate.sh` PASSES every clause; `tools/r3-acceptance.py
-  --suite-log` prints **R3 ACCEPTED** on 5/5 (2179 suite arms, 0 failed).
+- Parity ledger: **140 rows, 0 owed** (15 approved differences). R3 closed it
+  at 134 (2026-09-05: `tools/r3-acceptance.py --suite-log` printed **R3
+  ACCEPTED** on 5/5). R4 re-opened three rows on measurement, closed them, and
+  added six.
+- **R4 = the tlaplus-Examples corpus, PlusCal excluded**, measured clause by
+  clause in `desk/doc/testing.md` §*Examples coverage at R4*: all **373**
+  modules parse with the pinned SANY's verdict, and so do their `tlauc`
+  Unicode conversions, with identical semantic graphs; of the **127** small
+  TLC models 101 report the pin's outcome, 2 end in approved refusals and 24
+  are a recorded time-bound fallback; the **31** large models pass a
+  1,000-state smoke run. `tools/r4-acceptance.py` (R4.5.2) computes the
+  sentence; the user's runs close it (R4.5.3).
+- New since R3: CommunityModules operators (native overrides, four refused by
+  name), the TLAPS library and `Apalache.tla` on the module path (as roots of a
+  `%clay` bundle, not vendored), `Print`/`PrintT` (a `%output` artifact),
+  `IOUtils!IOEnv` (`request.env`), `-D` properties (`request.props`,
+  `TLCGet("-Dk")`, `\cdot`), `Json` encoders and writers (readers refused),
+  `TLCGet("config")`, Unicode spellings, a 256 MB continuation bound.
 - Oracle pin: `tlaplus@4ba7d8811`; fixtures `tlaplus-Examples@47b0e2cc`,
   `vscode-tlaplus@acc095d6`.
 - `api-version` 1, agent state `%0`, `sys.kelvin = [%zuse 411 410 409 408]`.

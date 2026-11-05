@@ -46,8 +46,12 @@ malformed action crashes the mark's `grab`, not the agent.
 ## Building a request
 
 ```hoon
-+$  request  [=op src=source-bundle =limits write=(unit write-target) promote=(set diag-code)]
++$  request  [=op src=source-bundle =limits write=(unit write-target) promote=(set diag-code) env=(map @t @t) props=(map @t @t)]
 ```
+
+`env` (R4.2c) is the environment CommunityModules' `IOUtils!IOEnv` reads;
+`props` (R4.2g) are tlc2's `-D` properties (`TLCGet("-D<key>")`;
+`tlc2.tool.impl.Tool.cdot` = `"true"` enables `\cdot`). Both are usually `~`.
 
 Read [references/wire-reference.md](references/wire-reference.md) for every
 field with a real value. The four decisions that matter:
