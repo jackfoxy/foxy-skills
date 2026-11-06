@@ -72,8 +72,8 @@ table.
   latent divergence: record form in rendering is tlc2's `isName`, not "the
   domain is all strings".
 
-**Current: 140 rows, 140 terminal, 0 owed (2026-11-05).** Closed at 134 on
-2026-09-05 (R3); R4 re-opened three rows on measurement and added six.
+**Current: 141 rows, 141 terminal, 0 owed (2026-11-05).** Closed at 134 on
+2026-09-05 (R3); R4 re-opened three rows on measurement and added seven.
 
 ## The four lessons this history encodes
 

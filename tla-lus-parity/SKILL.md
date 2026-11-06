@@ -24,8 +24,8 @@ output, with the corresponding Java tool.
 Any intentional divergence is recorded in `desk/doc/compatibility.md`, carries a
 ledger row, and is pinned by a test that fails if *either* side changes.
 
-Current state: **140 rows, 0 owed, 15 approved differences (2026-11-05,
-R4.5.1).** R3 closed the ledger at 134 (R3 ACCEPTED on 5/5); R4 widened the
+Current state: **141 rows, 0 owed, 16 approved differences (2026-11-05,
+R4.5.2).** R3 closed the ledger at 134 (R3 ACCEPTED on 5/5); R4 widened the
 corpus to tlaplus-Examples. Evidence counts: `desk/doc/evidence-counts.md`
 (generated; never quote a number from memory).
 
@@ -48,7 +48,7 @@ Ask in this order:
 
 Only then is it a bug.
 
-## The fifteen approved differences, in one line each
+## The sixteen approved differences, in one line each
 
 | Row | Difference |
 |---|---|
@@ -67,12 +67,14 @@ Only then is it a bug.
 | `tlc-fp-identity` (R4.P5c) | a safety or DFID search keys its visited set on a 128-bit hash of the equality key, so two states whose FP64 fingerprints collide stay apart here (tlc2 merges them); FP64 stays wherever a fingerprint is observable |
 | `tlc-module-community` (R4.2b) | CommunityModules operators are native overrides; `SVG!NodeOfRingNetwork`, `SVG!NodesOfDirectedMultiGraph`, `Statistics!ChiSquare`, `VectorClocks!CausalOrder` are refused by name |
 | `sem-diag-location` (R4.5.1) | SANY's 4201 Multiply-defined and 4801 messages name the other symbol's location on a second line; the port's message is the first line |
+| `sem-inner-module-dump` (R4.5.2) | SemDump nests an inner module's own section in its parent's dump; the port's dump is the parent's alone (dump-only: the inner module's diagnostics are the parent's) |
 | `sem-substin-zero` (R4.5.1) | an INSTANCE of a parameterless module dumps `substin subs=0` around each body; SemDump has no SubstIn node (dump-only) |
 
-The fifteen rows are exactly: `tlc-driver`, `tlc-dfid`, `tlc-eval-cst`,
+The sixteen rows are exactly: `tlc-driver`, `tlc-dfid`, `tlc-eval-cst`,
 `tlc-value-model`, `cfg-internal-kw`, `tlc-value-order`, `tlc-module-tlc`,
 `tlc-module-community`, `tlc-live-product`, `tlc-fp-identity`, `tlc-coverage`,
-`tlc-var-order`, `tlc-uniquestring`, `sem-diag-location`, `sem-substin-zero`
+`tlc-var-order`, `tlc-uniquestring`, `sem-diag-location`, `sem-substin-zero`,
+`sem-inner-module-dump`
 (`python3 tools/check-parity.py` prints the histogram). The table above
 collapses `tlc-value-order` and `tlc-uniquestring` into one line (cause and
 effect) and splits `tlc-module-tlc`'s two clauses.

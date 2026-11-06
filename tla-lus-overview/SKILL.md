@@ -75,10 +75,10 @@ find the authoritative document for a claim.
 
 ## Current status (2026-11-05, R4 closing)
 
-- Parity ledger: **140 rows, 0 owed** (15 approved differences). R3 closed it
+- Parity ledger: **141 rows, 0 owed** (16 approved differences). R3 closed it
   at 134 (2026-09-05: `tools/r3-acceptance.py --suite-log` printed **R3
   ACCEPTED** on 5/5). R4 re-opened three rows on measurement, closed them, and
-  added six.
+  added seven.
 - **R4 = the tlaplus-Examples corpus, PlusCal excluded**, measured clause by
   clause in `desk/doc/testing.md` §*Examples coverage at R4*: all **373**
   modules parse with the pinned SANY's verdict, and so do their `tlauc`
