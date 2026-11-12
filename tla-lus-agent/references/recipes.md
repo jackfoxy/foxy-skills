@@ -7,7 +7,8 @@ typechecks** — you do not need the `sur` faces in scope. Where a recipe wants
 paste the literal:
 
 ```
-=jl -build-file /=tla-lus=/lib/job/hoon        ::  then use default-limits:jl
+=jl  -build-file /=tla-lus=/lib/job/hoon       ::  then use default-limits:jl
+=tla -build-file /=tla-lus=/sur/tla-lus/hoon    ::  the molds the scry casts name
 ::  or, equivalently, the literal:
 ::  [1.000.000 64 100.000 1.000 ~m10 1.000.000 1.000.000]
 ```
@@ -38,8 +39,8 @@ Inv  == x < 4
          props=~
      ==
 :tla-lus &tla-lus-action [%submit ~.counter req]
-.^((unit job) %gx /=tla-lus=/job/counter/noun)
-.^(artifact %gx /=tla-lus=/job/counter/artifact/report/noun)
+.^((unit job:tla) %gx /=tla-lus=/job/counter/noun)
+.^(artifact:tla %gx /=tla-lus=/job/counter/artifact/report/noun)
 ```
 
 `check-opts` positionally is `[translate view difftrace continue cfg coverage
@@ -59,7 +60,7 @@ counterexample. `initial=&` would mean the *initial-state* computation found
 it, with no behaviour and no state-graph statistics.
 
 ```
-.^(artifact %gx /=tla-lus=/job/counter-bad/artifact/trace/noun)
+.^(artifact:tla %gx /=tla-lus=/job/counter-bad/artifact/trace/noun)
 ```
 
 The `%report` artifact renders the same thing as TLC's console output —
@@ -179,10 +180,15 @@ job's own diagnostics record it.
 ## 10. Shipped generators
 
 ```
-:tla-lus|submit ~.job-1 %check       ::  a DEMO request (empty module) — copy as a template
-+tla-lus/status ~.job-1
-:tla-lus|cancel ~.job-1
+:tla-lus +tla-lus!tla-lus/submit ~.job-1 %check   ::  the demo counter, with its config
++tla-lus!tla-lus/status ~.job-1
+:tla-lus +tla-lus!tla-lus/cancel ~.job-1
 ```
+
+From the `%base` dojo, as above. With the dojo on `%tla-lus` (`=dir
+/=tla-lus=`, back with `=dir`) the short forms `:tla-lus|submit ...`,
+`+tla-lus/status ...` work too; from `%base` the short poke form fails with
+`%generator-build-fail` (it names a generator in the CURRENT desk).
 
 The id argument is a `@ta`, not a cord — `~.job-1`, not `'job-1'`.
 

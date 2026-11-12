@@ -109,9 +109,10 @@ Five terminal results:
 
 ```
 .^([api=@ud state=@ud] %gx /=tla-lus=/version/noun)
-.^((list [req-id stage]) %gx /=tla-lus=/jobs/noun)
-.^((unit job) %gx /=tla-lus=/job/counter/noun)
-.^(artifact %gx /=tla-lus=/job/counter/artifact/report/noun)
+=tla -build-file /=tla-lus=/sur/tla-lus/hoon      ::  the molds, for the casts
+.^((list [req-id:tla stage:tla]) %gx /=tla-lus=/jobs/noun)
+.^((unit job:tla) %gx /=tla-lus=/job/counter/noun)
+.^(artifact:tla %gx /=tla-lus=/job/counter/artifact/report/noun)
 ```
 
 An artifact scry returns `[~ ~]` unless the job exists, is **terminal**, and
@@ -123,10 +124,14 @@ the job so far, then stream live ordered events; terminal replay is idempotent
 and subscribing to an unknown id fails the watch. `/jobs` is a marker
 subscription with no snapshot.
 
-Three shipped generators cover the common path — `:tla-lus|submit <id>
-%check`, `+tla-lus/status '<id>'`, `:tla-lus|cancel '<id>'`. `submit.hoon` is a
-**demo** request (an empty `Demo` module); copy it as a template rather than
-using it for real work.
+Three shipped generators cover the common path. From the `%base` dojo:
+`:tla-lus +tla-lus!tla-lus/submit ~.job-1 %check`, `+tla-lus!tla-lus/status
+~.job-1`, `:tla-lus +tla-lus!tla-lus/cancel ~.job-1`; the short forms
+(`:tla-lus|submit ...`, `+tla-lus/status ...`) only from the `%tla-lus` desk
+(`=dir /=tla-lus=`) -- the short poke form names a generator in the dojo's
+CURRENT desk and fails from `%base` with `%generator-build-fail`.
+`submit.hoon`'s demo is a four-state counter with its config (`%check` gives
+`%ok`, 4 distinct states); copy it as a template for real work.
 
 ## Ship-wide quotas
 

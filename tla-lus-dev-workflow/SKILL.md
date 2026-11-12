@@ -58,9 +58,9 @@ python3 tools/check-parity.py     # ledger well-formed; how many rows still owed
 bash tools/release-gate.sh        # PASSES as of 2026-09-05 (R3.0d)
 ```
 
-Current: **141 rows, 0 owed** (2026-11-05); R3 was ACCEPTED on 5/5; R4's
-acceptance is `tools/r4-acceptance.py` (R4.5.2) over the Examples censuses
-(`tools/examples.py`, `references/commands.md`).
+Current: **141 rows, 0 owed** (2026-11-05); R3 was ACCEPTED on 5/5; **R4 ACCEPTED** on
+11/11 clauses (2026-11-12): `tools/r4-acceptance.py` over the Examples
+runner pass (`tools/r4-examples-run.sh`, `references/commands.md`).
 
 ## Environment
 

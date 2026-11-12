@@ -73,7 +73,7 @@ find the authoritative document for a claim.
    Clay — the scaffold gate enforces it. Sources arrive asynchronously through
    the `%modules` stage.
 
-## Current status (2026-11-05, R4 closing)
+## Current status (2026-11-12, R4 ACCEPTED)
 
 - Parity ledger: **141 rows, 0 owed** (16 approved differences). R3 closed it
   at 134 (2026-09-05: `tools/r3-acceptance.py --suite-log` printed **R3
@@ -85,8 +85,8 @@ find the authoritative document for a claim.
   Unicode conversions, with identical semantic graphs; of the **127** small
   TLC models 101 report the pin's outcome, 2 end in approved refusals and 24
   are a recorded time-bound fallback; the **31** large models pass a
-  1,000-state smoke run. `tools/r4-acceptance.py` (R4.5.2) computes the
-  sentence; the user's runs close it (R4.5.3).
+  1,000-state smoke run. `tools/r4-acceptance.py` computed the sentence on
+  the user's runs: **R4 ACCEPTED, 11/11 clauses (2026-11-12)**.
 - New since R3: CommunityModules operators (native overrides, four refused by
   name), the TLAPS library and `Apalache.tla` on the module path (as roots of a
   `%clay` bundle, not vendored), `Print`/`PrintT` (a `%output` artifact),
