@@ -1,6 +1,6 @@
 ---
 name: hoon-style-guide
-description: Comprehensive style guide for writing clean, idiomatic, and maintainable Hoon code following community conventions including naming, formatting, documentation, and idiomatic patterns. Use when writing new code, reviewing code, establishing team standards, or ensuring code quality.
+description: Comprehensive style guide for writing clean, idiomatic, and maintainable Hoon code following community conventions including naming, formatting, documentation, partial application and composition, and idiomatic patterns. Use when writing new code, reviewing code, establishing team standards, or ensuring code quality.
 user-invocable: true
 disable-model-invocation: false
 validated: safe
@@ -22,7 +22,8 @@ This guide covers naming conventions, code organization, formatting, documentati
 3. Write effective comments and documentation
 4. Organize code into coherent structures
 5. Apply idiomatic Hoon patterns
-6. Avoid common anti-patterns
+6. Prefer partial application and composition where they remove code
+7. Avoid common anti-patterns
 
 Syntax and compiler-failure details belong in the companion skills:
 `hoon-basics` for parseability and rune usage, `type-system` for casts and
@@ -307,6 +308,11 @@ violations. For container-specific access rules, use `data-structures`.
 | concat-map | `zing` + `turn` | `weld` in a `\|-` (but see "Recursion and wet gates" below) |
 | append one element | `snoc` | `(weld a ~[b])` |
 | prefix test | `=(a (scag (lent a) b))` | element-wise `\|-` |
+| adapt a 2-argument gate for `turn`/`murn`/`skim` | `cury` / `curr` | a `\|=` that only supplies a constant |
+| map lookup across a list | `~(get by m)` as the gate | `\|=(k=@ (~(get by m) k))` |
+| pipeline two named gates | `cork` (left first) / `corl` (right first) | nested calls inside a `\|=` |
+| project a pair | `head` / `tail` | `\|=([a=* b=*] a)` |
+| sieve a `(list (unit))` | `(murn xs same)` | `turn` + `?~` + `?>` |
 
 ```hoon
 ::  ✓ Good: use a clear stdlib traversal
@@ -419,6 +425,78 @@ Prefer one `?=` over a chain of `?~`/`i`/`t` bindings.
 (f i.commands i.t.commands i.t.t.commands i.t.t.t.commands)
 ```
 
+### Pattern 9: partial application and composition
+
+Prefer the functional hacks — `cury`, `curr`, `cork`, `corl`, `head`, `tail`,
+`same`, `lead`, `late` — and partially applied door arms **whenever they are
+shorter than the `|=` they replace**. The payoff is lines deleted and names not
+invented, not elegance; see Anti-Pattern 4 for where it stops paying.
+
+`cury` binds the **head** of a gate's sample, `curr` the **tail**:
+
+| Instead of | Write |
+|---|---|
+| `\|=(a=@ (mul 2 a))` | `(cury mul 2)` |
+| `\|=(a=@ (sub a 1))` | `(curr sub 1)` |
+| `\|=(a=(list @) (scag 3 a))` | `(cury scag 3)` |
+| `\|=(i=@ (get32 i block))` | `(curr get32 block)` |
+| `\|=(a=@t [%s a])` | `(lead %s)` |
+| `\|=(a=path [a %y])` | `(late %y)` |
+
+`cork` applies its left gate first, `corl` its right (mathematical `∘`):
+
+```hoon
+::  ✓ Good
+(turn adr.req (cork address-to-hex tape))
+
+::  ✗ Bad: a lambda that only sequences two named gates
+%+  turn  adr.req
+|=  a=address
+^-  tape
+(tape (address-to-hex a))
+```
+
+A door arm is already a partially applied gate. Pass it directly:
+
+```hoon
+::  ✓ Good
+(murn matches ~(get by target-map))
+(turn agents head)
+
+::  ✗ Bad
+(murn matches |=(k=@t (~(get by target-map) k)))
+(turn agents |=([name=@tas yoke=*] name))
+```
+
+Use `~(. door args)` to bind a door's sample once when several of its arms are
+called with the same arguments, rather than repeating `~(arm door args)`.
+
+This pattern subsumes §4's rule against unnecessary arms. An arm that exists
+only to supply one constant to another gate is a curry spelled long:
+
+```hoon
+::  ✗ Bad: five lines and a name, to specialize +mul
+::
+++  scale-by
+  |=  factor=@ud
+  |=  n=@ud
+  ^-  @ud
+  (mul factor n)
+::  …later
+(turn counts (scale-by 3))
+
+::  ✓ Good
+(turn counts (cury mul 3))
+```
+
+**Caveats.** Every gate named here is wet (`|*`), so the rules in "Recursion
+and wet gates" apply in full: never place a `$`/`^$` self-reference inside a
+composed chain — bind it to a typed `=/` first. Their products also carry
+weaker type information than a `^-`-cast `|=`; cast at the call site when the
+result feeds another wet gate (`` `(list @t)`(turn xs (cork f g)) ``). When a
+chain fails to compile, the error arrives at the mull site with no face names:
+expand it back to `|=`, find the real error, then recompose.
+
 ## 6. Anti-Patterns to Avoid
 
 ### Anti-Pattern 1: Magic Numbers
@@ -462,6 +540,20 @@ word order, not illegal characters (for those, see §1).
 If two branches of a `?^`/`?:` end in the same expression, hoist it into a
 `=/` before the test. Two `?-` arms with identical bodies should be one
 `?(%a %b)` arm.
+
+### Anti-Pattern 4: point-free past the break-even
+
+Composition is a line-count tool. Three signs it has stopped paying:
+
+- the chain is three or more composers deep — `(cury (cury rev 3) 8)` is at
+  the limit and `(cork (cury f a) (curr g b))` is past it
+- one argument to `cork`/`cury` is itself a `|=` — if you are already writing
+  a lambda, write the whole expression as one
+- the gate wants its arguments in an order `cury`/`curr` cannot produce, so a
+  `|=` wrapper gets added to flip them
+
+Each is longer *and* less legible than the `|=` it replaced. Point-free style
+earns nothing in a `?-` arm that a reader must follow line by line.
 
 ## 7. Testing and Examples
 
@@ -564,7 +656,9 @@ c
  ### Recursion and wet gates
 
 Standard-library traversals — `weld`, `turn`, `zing`, `skim`, `sort` — are
-wet gates. A self-reference (`$` or `^$`) appearing inside their arguments is
+wet gates, as are the functional hacks (`cury`, `curr`, `cork`, `corl`,
+`head`, `tail`, `same`) recommended in Pattern 9. A self-reference (`$` or
+`^$`) appearing inside their arguments is
 mulled against a type that is still being computed, and the compiler reports
 `fuse-loop` / `mint-loop`. The `^-` casts on the trap and on the inner gate
 do **not** help: goal propagation does not survive a wet-gate mull.
