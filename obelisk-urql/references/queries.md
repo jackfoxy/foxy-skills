@@ -29,14 +29,25 @@ SELECT [ TOP <n> ]
 | `JOIN` (natural, no ON) | supported |
 | `JOIN ... ON` | supported |
 | `CROSS JOIN` | supported |
-| `LEFT`/`RIGHT`/`OUTER JOIN` | parsed, not executed |
-| `GROUP BY`, `HAVING`, `ORDER BY`, `TOP` | parsed, not executed |
+| `LEFT`/`RIGHT`/`OUTER JOIN` | supported |
+| `GROUP BY`, `HAVING` | parsed, not executed |
+| `ORDER BY`, `TOP` | supported |
 | aggregate functions | not implemented |
-| `DIVIDED BY [ WITH REMAINDER ]` | parsed, not executed |
-| `EQUIV`, `EXISTS` | parsed; pending outer joins |
+| `DIVIDED BY [ WITH REMAINDER ]` | supported |
+| `EQUIV`, `EXISTS` | supported |
 | `ALL`, `ANY` | not implemented |
 
-`TOP` requires `ORDER BY` with a total ordering. Avoid `ORDER BY` inside CTEs or before the last step of a set-operation query unless `TOP` requires it.
+### ORDER BY and TOP
+
+- `ORDER BY` column: an output name (alias wins over a source column), any `FROM` column whether selected or not (`<alias>.<column>` or full qualification), or a 1-based ordinal over the expanded output (`*`, `t.*` count their columns).
+- An unqualified `ORDER BY` column in more than one joined relation crashes: `ORDER BY: column %<name> must be qualified, it is in ~[...]`.
+- Ordering is by aura: `@t`/`@ta`/`@tas` case-insensitive then lower case first; `@rd`/`@rs`/`@rh`/`@rq` as floats; `@s*` signed; others by atom value.
+- No nulls: a row lacking the column (outer join) sorts last `ASC`, first `DESC` (PostgreSQL convention).
+- Not a total ordering of the returned rows → result preceded by `[%message 'warning: result set order is partial and non-deterministic']` (a RAND warning, if any, comes first).
+- `TOP <n>`: `n` ≥ 1; requires `ORDER BY` (parse error `TOP requires ORDER BY`); crashes when the order is not total (`TOP <n>: ORDER BY is not a total ordering of the result`).
+- Set operations: the `ORDER BY` after the last query orders the combined result and may name only output columns or ordinals; `TOP` on the last query is a parse error. An earlier query may use `TOP` with its own `ORDER BY`.
+- `ORDER BY` in a CTE, or an earlier set-operation query, is ignored unless that `SELECT` has `TOP`.
+- Ordered results with several row types (outer joins): `%vector` keeps each row's own row type; text formats render one table holding every row type's columns, with empty cells (`null` in `%json`) for absent columns.
 
 ## Joins
 
@@ -50,6 +61,15 @@ Any number of tables/views/CTEs may be joined. Cross-database joins allowed; cro
 FROM adoptions A
 JOIN vaccinations V ON A.name = V.name AND A.species = V.species
 SELECT A.name, A.species, V.vaccine, V.vaccination-time;
+```
+
+**Outer joins** (`LEFT JOIN`, `RIGHT JOIN`, `OUTER JOIN`): same conditions as `JOIN` (natural, or `ON` equalities). No nulls: an unmatched row has **no columns** from the relation it did not match (rows of several row types). `SELECT` omits values that do not exist; a row with no selected value is omitted. A missing column never matches a later join. With an outer join present, joins run in written order (otherwise `CROSS JOIN`s run last). `COALESCE` returns its first existing argument; a scalar over a missing column does not exist.
+
+```
+FROM animals A
+LEFT JOIN adoptions D ON A.name = D.name AND A.species = D.species
+WHERE NOT EXISTS D.adopter-email
+SELECT A.name, A.species;
 ```
 
 **`CROSS JOIN`**: cartesian product, no predicate. Use with `WHERE` for any join condition that `ON` cannot express (inequalities, `OR`, expressions).
@@ -82,12 +102,14 @@ SELECT A.name, A.species, V.vaccine, V.vaccination-time;
 ```
 
 - **Column references in predicates must be unqualified names or the alias** assigned in `FROM`/`JOIN`. Raw table names and fully-qualified table names are **not** valid in predicates — assign an alias to disambiguate. `SCALARS` names and CTE columns are also valid.
-- `OR` takes precedence over `AND`; use parentheses to override.
+- `AND` takes precedence over `OR` (as in SQL); use parentheses to override.
 - `NOT` negates the following predicate.
 - `BETWEEN` is inclusive on both ends; test, begin, and end must be the same type and end > begin.
 - `IN` tests membership in a value list or a single-column CTE.
 - A `<cte-column>` used with `=`/inequality requires the CTE to return exactly one row (singleton).
-- `EQUIV`/`EXISTS` pending outer joins; `ALL`/`ANY` not implemented.
+- `EXISTS col` tests whether the row has the column (outer joins); `EXISTS cte.col` whether the CTE returns rows. `EQUIV` is `=` that is also true when neither side exists.
+- Any comparison with a non-existent operand is **false**; `NOT` negates as usual (two-valued logic).
+- `ALL`/`ANY` not implemented.
 
 ## Common table expressions (CTEs)
 
@@ -114,14 +136,19 @@ SELECT *;
 
 ## Set operations
 
-`UNION`, `EXCEPT`, `INTERSECT` combine complete queries, written between them, evaluated **left-to-right** (no precedence). `DIVIDED BY [ WITH REMAINDER ]` parses but does not execute.
+`UNION`, `EXCEPT`, `INTERSECT`, `DIVIDED BY [ WITH REMAINDER ]` combine complete queries, written between them, evaluated **left-to-right** (no precedence). An operand query needs `FROM` unless its `SELECT` is entirely literals (one row).
 
 - `UNION` — rows from either side.
 - `EXCEPT` — left rows not present on the right. Empty right removes nothing; empty left → empty result.
 - `INTERSECT` — rows on both sides. Either side empty → empty result.
 - `UNION` with an empty side returns the non-empty side.
+- `DIVIDED BY` — exact relational division: left = dividend, right = divisor. Divisor columns match dividend columns by **name and aura**; quotient = remaining dividend columns, in dividend order. Returns quotient rows paired with every divisor row **and nothing else**.
+- `DIVIDED BY WITH REMAINDER` — Codd division: quotient rows paired with every divisor row; extra pairings (the remainder) allowed.
+- Division, empty dividend → empty. Empty divisor → all distinct quotient rows (`WITH REMAINDER`), empty (`DIVIDED BY`).
+- Division with multiple row types: each dividend row type is divided separately by each divisor row type whose column names it contains.
+- Division crashes (`SET-QUERY DIVIDED BY[ WITH REMAINDER]: ...`) when a divisor column is not in the dividend, a matched column's aura differs, the divisor covers every dividend column, or an operand has duplicate output column names.
 
-Results are true sets; equality is **exact** — output column names, column order, and auras all participate, not just raw values. So `SELECT name` vs `SELECT name AS animal-name` do not match.
+Results are true sets; equality is **exact** — output column names, column order, and auras all participate, not just raw values. Source primary keys do not participate: projecting several source rows to equal values yields one row. So `SELECT name` vs `SELECT name AS animal-name` do not match.
 
 Unlike SQL, operands need not return the same row type: `UNION` can hold distinct row shapes side by side; `EXCEPT`/`INTERSECT` only match complete vectors that are exactly equal.
 

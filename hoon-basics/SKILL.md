@@ -394,7 +394,10 @@ q:`octs`favicon
 ```hoon
 &(a b)       ::  AND (pam)
 |(a b)       ::  OR (bar)
-!(a)         ::  NOT (zap)
+!a           ::  NOT (zap): a must be a single wide expression, e.g. !=(a b)
+?!(a)        ::  NOT, the form to use for any non-trivial a
+::  ✗ !(?=(@ a)) fails with -find.$: (x) with one item calls x as a gate
+::    (pulls its $ arm). Use ?!(?=(@ a)).
 =(a b)       ::  Equality test
 ```
 
@@ -417,3 +420,13 @@ q:`octs`favicon
 - [Hoon Rune Reference](https://docs.urbit.org/hoon/rune)
 - [Hoon Standard Library](https://docs.urbit.org/hoon/stdlib)
 - [Molds (Types)](https://docs.urbit.org/build-on-urbit/hoon-school/e-types)
+
+13. **Loobean and term literals have constant types**: `=/  total  %.y` gives `total` the type `%.y`, not `?`. A later `%=` that writes `%.n` (or any computed `?`) fails with `nest-fail -have.%.n -need.%.y`. The same holds for `%term` literals. Annotate the face when it will be rewritten, as in a trap's loop variable:
+
+```hoon
+::  WRONG — nest-fail on $(total &(total ok))
+=/  total  %.y
+
+::  CORRECT
+=/  total=?  %.y
+```
