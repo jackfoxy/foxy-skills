@@ -104,7 +104,7 @@ SELECT A.name, A.species, V.vaccine, V.vaccination-time;
 - **Column references in predicates must be unqualified names or the alias** assigned in `FROM`/`JOIN`. Raw table names and fully-qualified table names are **not** valid in predicates — assign an alias to disambiguate. `SCALARS` names and CTE columns are also valid.
 - `AND` takes precedence over `OR` (as in SQL); use parentheses to override.
 - `NOT` negates the following predicate.
-- `BETWEEN` is inclusive on both ends; test, begin, and end must be the same type and end > begin.
+- `BETWEEN` is inclusive on both ends; test, begin, and end must be the same type, or all numeric (compared by exact value), and end > begin.
 - `IN` tests membership in a value list or a single-column CTE.
 - A `<cte-column>` used with `=`/inequality requires the CTE to return exactly one row (singleton).
 - `EXISTS col` tests whether the row has the column (outer joins); `EXISTS cte.col` whether the CTE returns rows. `EQUIV` is `=` that is also true when neither side exists.

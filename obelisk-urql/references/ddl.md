@@ -51,6 +51,7 @@ DROP TABLE [ FORCE ] [ <db-qualifier> ] <table> [ <as-of> ]
 ```
 
 - Columns are `name <aura>` pairs. Exactly one `PRIMARY KEY`; key columns default to `ASC`.
+- Integer auras take a bit-width letter `A`–`J` (2^0–2^9 bits): `@udD` 0..255, `@sdD` -128..127, `@uxF` 32 bits. Only integer auras (`@ub @ud @uv @uw @ux @sb @sd @sv @sw @sx`) may be sized. A sized aura and its base are compatible (literals, predicates, arithmetic → sized result); arithmetic over two widths gives the larger, but `INSERT`/`UPSERT`/`UPDATE` reject a value of another width. Values that don't fit crash `INSERT`/`UPSERT`/`UPDATE`, `ALTER COLUMN` over existing data, and any arithmetic or function result (`'300 exceeds @udD'`).
 - `DROP TABLE` needs `FORCE` when the table is populated, referenced by a view, or used in a foreign key; `FORCE` cascades the dependent drops.
 
 ### ALTER TABLE

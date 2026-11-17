@@ -73,10 +73,11 @@ Literals follow hoon aura notation. Some auras accept relaxed forms in `INSERT`/
 | @ub | unsigned binary | `10.1011` | same |
 | @ud | unsigned decimal | `2.222` or `2222` | `2.222` |
 | @ux | unsigned hex | `0x12.6401` | same |
+| @uv | unsigned base32 | `0v1f.ab3ck` (dotted every 5 digits) | same |
 
 - **Cords** use single quotes. Embed a single quote with double backslash: `'it\\'s'`.
 - **@rd floats need the `.~` prefix**: `3.14` → `.~3.14`, `0.1` → `.~0.1`. Bare `.3.14` is `@rs`.
-- `@c`, `@q`, `@uv`, `@ta`, `@tas` literals are unsupported/pending; insert via the API.
+- `@c`, `@q`, `@ta`, `@tas` literals are unsupported/pending; insert via the API.
 - `DEFAULT` keyword = the column aura's bunt (default) value (valid in `INSERT`/`UPSERT` values and `UPDATE ... SET`).
 
 ## Comments

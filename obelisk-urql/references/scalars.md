@@ -24,7 +24,7 @@ UPDATE adoptions SET adoption-fee = adoption-fee + 5 WHERE LOWER(species) = 'cat
 
 - Inline arithmetic takes **no `END`**; it ends at the first non-operator token. `ABS(col1) + 1` is one arithmetic expression.
 - Unaliased inline `SELECT` items are named `scalar-<n>` (zero-based `SELECT` position), like `literal-<n>` for literals.
-- Standing alone, constants need parentheses inline: `PI()`, `E()`, `TAU()`, `PHI()`. Bare `PI` etc. only as arithmetic operands or function arguments.
+- Standing alone, constants need parentheses inline: `PI()`, `E()`, `TAU()`, `PHI()`. Bare `PI` etc. only as arithmetic operands or function arguments. A `FROM` column named `e`/`pi`/`tau`/`phi` takes precedence over the constant everywhere, even over `PI()`.
 - `GETUTCDATE()` is the query time everywhere; each `RAND` call is evaluated separately.
 - Two-argument `MIN`/`MAX` are scalars; one-argument `MIN(col)`/`MAX(col)` are aggregates.
 - **Not allowed** in `JOIN ... ON` predicates (`scalar functions are not supported in this predicate`), `INSERT`/`UPSERT` `VALUES`, `MERGE`, `GROUP BY`, `ORDER BY`.
@@ -45,9 +45,9 @@ CASE [ <scalar-node> ] WHEN { <scalar-node> | <predicate> } THEN <scalar-node> [
 COALESCE ( <scalar-node> [ ,...n ] )
 ```
 
-- `IF` — `ELSE` is required; `THEN`/`ELSE` must be the same type.
-- `CASE` — **simple form** with a leading expression compares it to each `WHEN` value; **searched form** omits it and evaluates each `WHEN` as a predicate. First match wins. `ELSE` optional; with no match and no `ELSE` the query crashes. All `THEN`/`ELSE` must share a type.
-- `COALESCE` — first existing argument (outer joins); none exists → result does not exist.
+- `IF` — `ELSE` is required; `THEN`/`ELSE` must be the same type, or numeric (converted to their common type, see Mixed numerics).
+- `CASE` — **simple form** with a leading expression compares it to each `WHEN` value; **searched form** omits it and evaluates each `WHEN` as a predicate. First match wins. `ELSE` optional; with no match and no `ELSE` the query crashes. All `THEN`/`ELSE` must share a type or be numeric (converted to their common type). Simple-form numeric `WHEN` values match by exact value across types.
+- `COALESCE` — first existing argument (outer joins); none exists → result does not exist. Numeric arguments convert to their common type.
 
 ## Arithmetic
 
@@ -55,8 +55,8 @@ COALESCE ( <scalar-node> [ ,...n ] )
 <arithmetic-op> ::= + | - | * | / | % | ^
 ```
 
-- Operands are `@ud`, `@sd`, `@rh`, `@rs`, `@rd`, or `@rq`; both sides same type, result same type (mixed float precisions conflict). `%` (modulo) accepts no float. `^` takes any numeric exponent; float operations round toward zero.
-- `/` on `@ud`/`@sd` is **integer division** and truncates toward zero: `5 / 2 END` is `2`, not `.~2.5`. Use float operands for a fractional result.
+- Operands are a numeric type: unsigned `@ub` `@ud` `@uv` `@uw` `@ux` (all compute as `@ud`), signed `@sb` `@sd` `@sv` `@sw` `@sx` (all compute as `@sd`), float `@rh` `@rs` `@rd` `@rq`. Any numeric types mix; the result is their common type (see Mixed numerics), and a numeric with a non-numeric type conflicts (`number system conflict: ~.ud %lus ~.t`). Unsigned subtraction below zero crashes. `%` on a float crashes (`remainder not implemented for @rd`). `x ^ -y` is `1 / x ^ y`; `0 ^ -1` is division by zero. Float operations round toward zero.
+- `/` on integer types is **integer division** and truncates toward zero: `5 / 2 END` is `2`, not `.~2.5`. Use float operands for a fractional result.
 - An arithmetic scalar in the `SCALARS` clause must **terminate with `END`**: `col1 + col2 * 3 END`. Inline arithmetic has no `END`.
 - Put whitespace between a numeric literal and a following operator (`1+1` fails; `1 +1`, `1 + 1` work). After a column or `)` none is needed, except `-`, which a column name absorbs.
 - Precedence: `^` (highest), then `*` `/` `%`, then `+` `-`. `^` is right-associative; the rest left-associative. Parentheses override.
@@ -67,6 +67,22 @@ COALESCE ( <scalar-node> [ ,...n ] )
 2 ^ 3 ^ 2 END            :: 512 (right-assoc)
 (ABS(--3) + FLOOR(.~2.9)) * SQRT(16) END
 ```
+
+## Mixed numerics
+
+Every operand converts to the operation's **common type** before it runs; comparisons instead compare exact values.
+
+- Common type = most granular: float > signed > unsigned.
+  - floats: the wider, `@rq` > `@rd` > `@rs` > `@rh`.
+  - integer + float: the float, but at least `@rd` (`@ud + @rh` → `@rd`).
+  - signed + unsigned → signed. Same notation kept (`@ux + @sx` → `@sx`), different notations → decimal (`@ux + @ud` → `@ud`, `@sx + @ud` → `@sd`).
+  - sized: sized + unsized keeps the width (`@udD + @ud` → `@udD`, `@udD + @sd` → `@sdD`); two widths → the larger (`@udD + @udE` → `@udE`).
+  - commutative and associative; non-numeric types combine only with themselves.
+- Conversion: float widening and unsigned→signed are exact; integer→float rounds past the float's precision (2^53 for `@rd`). A value converted to a sized type must fit: `@udD 200 + @sd` crashes `--200 exceeds @sdD`.
+- `^`: the base's type, except (in order) a float exponent → common type (`2 ^ .~0.5` → `@rd`); a float base with an integer exponent stays its type (`.~~1.5 ^ 2` → `@rh`); an integer base with a negative literal or any non-literal signed exponent → `@rd`, even `@sd ^ @sd`-column (`2 ^ -3` → `.~0.125`); an unsigned base with a non-negative signed literal exponent becomes signed (`@ux ^ --2` → `@sx`). The exponent itself is not converted.
+- One-argument functions compute in their argument's type. `MAX`, `MIN`, `RAND`, and `IF`/`CASE`/`COALESCE` branches convert to the common type. `ATAN2` uses the common float, `@rd` for two integers.
+- Comparisons (`=` `<>` `<` `>` `<=` `>=`, `BETWEEN`, `IN`/`NOT IN`, simple `CASE` `WHEN`, `JOIN ... ON`) are exact by value: `--2 = .~~2`; `9.007.199.254.740.993 > .~9007199254740992`; `.~0 = .~-0`; NaN equals nothing (only `<>` is true).
+- Not converted: `INSERT`/`UPSERT`/`UPDATE` values (column type or its sized/unsized base only), set operations, foreign keys, natural joins (same name and aura).
 
 ## DateTime
 
@@ -83,7 +99,7 @@ COALESCE ( <scalar-node> [ ,...n ] )
 
 `ABS` · `LOG` (natural; crashes ≤0) · `FLOOR` · `CEILING` · `ROUND(value, length)` · `SIGN` · `SQRT` (crashes <0) · `MAX(a,b)` · `MIN(a,b)` · `RAND(low,high)` · `DEGREES` · `SIN` · `COS` · `TAN` · `ASIN` · `ACOS` · `ATAN` · `ATAN2(y,x)`
 
-- All accept `@ud`/`@sd`/`@rh`/`@rs`/`@rd`/`@rq`; two-arg functions need matching types. Result type generally matches input; `LOG`, `SIN`…`ATAN2` keep a float aura and return `@rd` for `@ud`/`@sd`.
+- All accept any numeric type; two-arg functions take any numeric mix, converted to the common type. Result type generally matches input; `LOG`, `SIN`…`ATAN2` keep a float aura and return `@rd` for integers. `ROUND` length is any integer type. Integer `^`, `SQRT`, `DEGREES` compute in `@rd` and truncate, so values beyond 2^53 lose precision.
 - `ROUND` length: positive rounds to that many decimals; negative (`@sd` only) rounds to `10^|length|`; round-half-up toward +inf.
 - `RAND(low, high)` is inclusive both ends; **the only non-deterministic `SELECT`** — emits `warning: results are non-deterministic`.
 
@@ -102,7 +118,7 @@ Float math (`@rh`, `@rs`, `@rd`, `@rq`) is **not IEEE-754 round-to-nearest**. Th
 
 `ROUND` on a float scales by `10^length` through `^` (repeated multiplication), so rounding to many decimal places is itself inexact.
 
-Comparisons (`=` `<>` `<` `>` `<=` `>=` `IN` in `WHERE`) and `ORDER BY` use float ordering for all four auras. Primary-key and index ordering use float ordering only for `@rd`; `@rh`, `@rs` and `@rq` keys sort by raw bits, so negative values sort wrong. `-0.0` and `0.0` compare **equal** in a predicate but are **distinct** key values; avoid negative zero in indexed columns.
+Comparisons (`=` `<>` `<` `>` `<=` `>=` `IN` in `WHERE`) and `ORDER BY` use float ordering for all four auras. Primary-key and index ordering use float ordering only for `@rd` and signed ordering only for `@sd`; `@rh`, `@rs`, `@rq`, `@sb`, `@sv`, `@sw` and `@sx` keys sort by raw bits, so negative values sort wrong. Predicates and `ORDER BY` compare every signed aura as signed. `-0.0` and `0.0` compare **equal** in a predicate but are **distinct** key values; avoid negative zero in indexed columns.
 
 These are properties of the Urbit float libraries, not of urQL, and may change as `lib/math` gains jets.
 

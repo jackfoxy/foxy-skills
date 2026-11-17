@@ -376,6 +376,16 @@ q.favicon
 q:`octs`favicon
 ```
 
+17. **`~.` knot literals take only `a-z 0-9 - . ~ _`**: an aura with a size letter, such as `~.udD`, is a syntax error at the capital. Write a cord instead; `@t` nests in `@ta` (odors nest when one is a prefix of the other).
+
+```hoon
+::  WRONG — syntax error at the D
+[~.udD 100]
+
+::  CORRECT
+['udD' 100]
+```
+
 ## Fast Lookups
 
 ### Arithmetic
