@@ -685,6 +685,25 @@ typed `=/` before passing it to a wet gate.
 (weld here children)
 ```
 
+Door arms such as `~(uni in …)`, `~(put in …)`, and `~(gas by …)` are wet
+gates too, so a self-reference in the door's sample loops the same way:
+
+```hoon
+::  ✗ Bad — fuse-loop: $ inside the sample of the wet +uni
+|=  n=*
+^-  (set @tas)
+?@  n  ~
+(~(uni in $(n -.n)) $(n +.n))
+
+::  ✓ Good
+|=  n=*
+^-  (set @tas)
+?@  n  ~
+=/  head=(set @tas)  $(n -.n)
+=/  tail=(set @tas)  $(n +.n)
+(~(uni in head) tail)
+```
+
 This is the one place where the "prefer stdlib traversals over `|-`" rule in
 the style guide's §5 is overridden. `turn`/`murn`/`levy`/`lien` remain
 correct for any
@@ -729,6 +748,39 @@ set from a list of lists, fold with `roll` and `~(gas in set)` rather than
 A single `(zing (turn xs gate))` over a simple gate is fine. Suspect the
 chain when three or more wet gates nest and an inner gate branches between
 `~` and another wet product.
+
+Over a large or recursive element type — an AST union, `result`, a
+`set-table` — two nested wet gates are enough to loop, even with no
+branching and every gate cast. Each of these failed with `fuse-loop` /
+`mull-grow`:
+
+```hoon
+::  ✗ Bad — two wet gates over (list result:ast)
+[%results (weld head (weld (zing relations) count))]
+::  ✗ Bad — roll of zing of turn; the inner gate is uncast
+%+  roll  (zing (turn tables |=(st=set-table columns.st)))
+|=  [c=column:ast acc=(map @tas @ta)]
+?:((~(has by acc) name.c) acc (~(put by acc) name.c type.c))
+```
+
+With such types, give every wet product a typed `=/`, whatever the depth,
+and cast `roll` gates and gates that may produce `~`:
+
+```hoon
+::  ✓ Good
+=/  relation-results=(list result:ast)  (zing relations)
+=/  tail=(list result:ast)  (weld relation-results count)
+=/  results=(list result:ast)  (weld head tail)
+[%results results]
+::  ✓ Good
+=/  per-table=(list (list column:ast))
+  (turn tables |=(st=set-table `(list column:ast)`columns.st))
+=/  all-columns=(list column:ast)  (zing per-table)
+%+  roll  all-columns
+|=  [c=column:ast acc=(map @tas @ta)]
+^-  (map @tas @ta)
+?:((~(has by acc) name.c) acc (~(put by acc) name.c type.c))
+```
 
 ### Type narrowing and write-back
 

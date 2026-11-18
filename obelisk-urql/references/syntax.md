@@ -59,7 +59,7 @@ Literals follow hoon aura notation. Some auras accept relaxed forms in `INSERT`/
 |:--|:--|:--|:--|
 | @da | date | `~2020.12.25`, `2020.12.25`, `~2020.12.25..7.15.0..1ef5` | same, but `~` required |
 | @dr | timespan | `~d71.h19.m26.s24`, `d71.h19` | `~`-prefixed only |
-| @f | loobean | `y` `n` `Y` `N` (not `%.y`/`%.n`) | `Y` `N` |
+| @f | loobean | `%.y` `%.n` (legacy `y` `n` `Y` `N`) | `%.y` `%.n` (legacy `Y` `N`; a column named `y`/`n` must then be qualified, `T1.y`) |
 | @if | IPv4 | `.195.198.143.90` | same |
 | @is | IPv6 | `.0.0.0.0.0.1c.c3c6.8f5a` | same |
 | @p | ship | `~sampel-palnet`, `sampel-palnet` | `~`-prefixed only |

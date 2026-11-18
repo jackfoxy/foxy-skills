@@ -93,7 +93,17 @@ Alternatively, use `;;` for runtime normalization of the whole structure:
 find-fork
 ford: %slim failed
 ```
-**Cause**: `?-` switch statement is missing a case.
+**Cause**: `?-` switch statement is missing a case, or a face is read
+across a fork where it sits at different axes (see hoon-basics gotcha 13).
+
+```hoon
+::  Wrong: name is +6 of an unqualified column, +14 of a qualified one
+|=  c=$%(qualified-column unqualified-column)
+name.c        ::  -find.name.c, find-fork
+
+::  Fix: narrow first; each branch then resolves name
+?:(?=(qualified-column c) name.c name.c)
+```
 
 **Debugging steps**:
 1. Find the `?-` expression
@@ -124,6 +134,28 @@ recursive molds such as `tree`, `list`, and containers built on trees (`map`,
 **Fix**: when matching a union that contains a recursive mold, match the
 non-recursive branch first, or narrow by tag/outer structure before inspecting
 the recursive value.
+
+A `?=` against a large recursive `$%` union — e.g. an AST's
+`scalar-function`, ~50 variants that hold `scalar-node`, which holds
+`scalar-function` — may not report `fish-loop` at all: the build appears to
+hang. Copy the value into an untyped noun, test head tags, then clam:
+
+```hoon
+::  Wrong: fishes the whole recursive union
+?:  ?=(scalar-function:ast node)
+  (use node)
+...
+
+::  Fix: tags on an untyped noun, as +evaluate-datum in obelisk does
+=/  raw=*  node
+?:  ?=([%qualified-column *] raw)
+  (use-column ;;(qualified-column:ast raw))
+?:  ?=([%scalar-name @] raw)
+  (use-name ;;(@tas +.raw))
+(use-function ;;(scalar-function:ast raw))
+```
+
+Testing a single head tag on a typed value (`?=(%aggregate -.f)`) is fine.
 
 ```hoon
 ::  Wrong: may fish-loop on recursive predicate mold

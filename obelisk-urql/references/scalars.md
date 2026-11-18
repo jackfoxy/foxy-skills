@@ -26,7 +26,7 @@ UPDATE adoptions SET adoption-fee = adoption-fee + 5 WHERE LOWER(species) = 'cat
 - Unaliased inline `SELECT` items are named `scalar-<n>` (zero-based `SELECT` position), like `literal-<n>` for literals.
 - Standing alone, constants need parentheses inline: `PI()`, `E()`, `TAU()`, `PHI()`. Bare `PI` etc. only as arithmetic operands or function arguments. A `FROM` column named `e`/`pi`/`tau`/`phi` takes precedence over the constant everywhere, even over `PI()`.
 - `GETUTCDATE()` is the query time everywhere; each `RAND` call is evaluated separately.
-- Two-argument `MIN`/`MAX` are scalars; one-argument `MIN(col)`/`MAX(col)` are aggregates.
+- Two-argument `MIN`/`MAX` are scalars; one-argument `MIN(col)`/`MAX(col)` are aggregates (see [queries.md](queries.md)). In `SELECT`/`HAVING` an aggregate may be a scalar argument or arithmetic operand; aggregates are not allowed in the SCALARS clause or `WHERE`.
 - **Not allowed** in `JOIN ... ON` predicates (`scalar functions are not supported in this predicate`), `INSERT`/`UPSERT` `VALUES`, `MERGE`, `GROUP BY`, `ORDER BY`.
 - AST: each inline call becomes a generated scalar `inline.<i>` appended to the statement's `scalars` (after `SCALARS` definitions; `<i>` is its index in that list) and is referenced as `[%scalar-name 'inline.<i>']` / `[%selected-scalar 'inline.<i>' alias]`.
 

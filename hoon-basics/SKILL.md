@@ -386,6 +386,8 @@ q:`octs`favicon
 ['udD' 100]
 ```
 
+18. **A mold and an arm cannot share a name in one core**: `+$  group-source` and `++  group-source` in the same core fail with `duplicate arm` (and `redo-match`), pointing at the second one. `+$` defines an arm too. Rename one, e.g. make the gate `++  resolve-group-source`.
+
 ## Fast Lookups
 
 ### Arithmetic

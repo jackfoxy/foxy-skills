@@ -10,9 +10,11 @@
 ]
 [ SCALARS { <name> <scalar-function> } [ ...n ] ]
 [ WHERE <predicate> ]
-[ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] [ HAVING <predicate> ] ]
+[ GROUP BY { <qualified-column> | <column-alias> | <column-ordinal> } [ ,...n ] ]
+[ HAVING <predicate> ]
 SELECT [ TOP <n> ]
-  { * | { <table-or-alias>.* } | <scalar-node> [ AS <column-alias> ] } [ ,...n ]
+  { * | { <table-or-alias>.* } | <scalar-node> [ AS <column-alias> ]
+    | <aggregate-function> [ AS <column-alias> ] } [ ,...n ]
 [ { UNION | EXCEPT | INTERSECT | DIVIDED BY [ WITH REMAINDER ] } <query> ] [ ,...n ]
 [ ORDER BY { <qualified-column> | <column-alias> | <column-ordinal> } { ASC | DESC } [ ,...n ] ]
 ```
@@ -30,12 +32,30 @@ SELECT [ TOP <n> ]
 | `JOIN ... ON` | supported |
 | `CROSS JOIN` | supported |
 | `LEFT`/`RIGHT`/`OUTER JOIN` | supported |
-| `GROUP BY`, `HAVING` | parsed, not executed |
+| `GROUP BY`, `HAVING` | supported |
 | `ORDER BY`, `TOP` | supported |
-| aggregate functions | not implemented |
+| aggregate functions | supported |
 | `DIVIDED BY [ WITH REMAINDER ]` | supported |
 | `EQUIV`, `EXISTS` | supported |
 | `ALL`, `ANY` | not implemented |
+
+### GROUP BY, HAVING, aggregates
+
+```
+<aggregate-function> ::= { AVG | BOOL-AND | BOOL-OR | SUM | STDEV | STDEVP | VAR | VARP } ( [ ALL | DISTINCT ] <scalar-node> )
+                       | COUNT ( { [ ALL | DISTINCT ] <scalar-node> | * } )
+                       | { MIN | MAX } ( <scalar-node> )
+```
+
+- Grouped query = `GROUP BY`, `HAVING`, or any aggregate. No `GROUP BY` → all rows one group (even none). Order: `FROM` → `WHERE` → `GROUP BY` → `HAVING` → `SELECT` → `ORDER BY`.
+- `SELECT`/`HAVING` columns must be `GROUP BY` columns or inside an aggregate (`column %x must be in GROUP BY or in an aggregate function`); `SELECT *` not allowed.
+- `GROUP BY` names a source column, a `SELECT` output name (output name first, as ORDER BY; may be a scalar: `SELECT YEAR(d) AS y ... GROUP BY y`), a SCALARS scalar, or a 1-based ordinal. Not an aggregate.
+- Aggregates only in `SELECT` and `HAVING`; there they may be scalar arguments or arithmetic operands (`ROUND(AVG(pay), --2)`, `SUM(a) / COUNT(*)`). Never nested in another aggregate, never in `WHERE`/`SCALARS`/`ON`/`GROUP BY`/`ORDER BY` (order by alias/ordinal). One-arg `MIN`/`MAX` = aggregate, two-arg = scalar.
+- Argument is any scalar expression (`SUM(price * qty)`). `DISTINCT` dedupes by value (`.~0` = `.~-0`, `5` = `--5`).
+- Unaliased aggregate output name: `<function>-<n>` by SELECT position (`count-1`).
+- No nulls: rows lacking the argument are skipped (except `COUNT(*)`); rows lacking a `GROUP BY` column form their own group lacking it. An aggregate of no values doesn't exist (omitted from the row) except `COUNT` = 0; `STDEV`/`VAR` of one value doesn't exist.
+- `BOOL-AND`/`BOOL-OR`: `@f` arguments only (`BOOL-OR: requires a loobean argument, not @ud`); `%.y` when every/any value is `%.y`; no values → doesn't exist (not `%.y`/`%.n`). Not `AND`/`OR`, which are predicate keywords.
+- Types: `COUNT` `@ud`; `BOOL-*` `@f`; `MIN`/`MAX` any aura, keep it; `SUM` numeric, keeps type minus bit width (`@udD` → `@ud`); `AVG`/`STDEV*`/`VAR*` numeric, common type with `@rd` (`@rq` stays `@rq`). Non-numeric `SUM` crashes `SUM: requires a numeric argument, not @t`.
 
 ### ORDER BY and TOP
 

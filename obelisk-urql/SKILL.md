@@ -14,7 +14,7 @@ urQL is the scripting/query language of Obelisk, an Urbit-native RDBMS Gall agen
 - **Clause order is evaluation order:** `FROM .. WHERE .. SELECT ..`, never SELECT-first.
 - **`SCALARS` placement:** in a query it sits after the joins and **before `WHERE`**; in `UPDATE`/`DELETE` it sits **before** the verb.
 - **Results are always sets** (no dup rows, no `DISTINCT`). **No nulls** — columns are non-nullable typed atoms.
-- **Auras, not SQL types.** Literals follow hoon aura notation (`'cord'`, `~2024.1.1`, `--20`, `.~3.14`, `Y`/`N`). `@rd` floats need the `.~` prefix.
+- **Auras, not SQL types.** Literals follow hoon aura notation (`'cord'`, `~2024.1.1`, `--20`, `.~3.14`, `%.y`/`%.n`; legacy `Y`/`N` also accepted). `@rd` floats need the `.~` prefix.
 - **No inlined sub-queries** — use CTEs (`WITH`) / joins, referenced by alias.
 - `INNER` keyword does not exist (`JOIN` is inner). `DELETE` **requires** `WHERE`. SQL "schema" → `NAMESPACE`.
 - Comments are `::` and `/* */` (delimiters in columns 1–2), not `--`.
@@ -46,4 +46,4 @@ Canonical worked examples: [examples/sample.md](examples/sample.md).
 
 ## Implementation status (frequent traps)
 
-Parsed but **not yet executed**: `GROUP BY`, `HAVING`, aggregates, `ALL`, `ANY`, `CREATE/ALTER/DROP INDEX`, `CREATE/DROP VIEW`. Executed: DDL on databases/namespaces/tables, `INSERT`/`UPSERT` (`VALUES` or query)/`UPDATE`/`DELETE`/`TRUNCATE`, `JOIN`/`JOIN ON`/`CROSS JOIN`/`LEFT`/`RIGHT`/`OUTER JOIN`, `EXISTS`, `EQUIV`, `UNION`/`EXCEPT`/`INTERSECT`/`DIVIDED BY [ WITH REMAINDER ]`, scalar functions, `AS OF`, `ORDER BY`, `TOP`.
+Parsed but **not yet executed**: `ALL`, `ANY`, `CREATE/ALTER/DROP INDEX`, `CREATE/DROP VIEW`. Executed: DDL on databases/namespaces/tables, `INSERT`/`UPSERT` (`VALUES` or query)/`UPDATE`/`DELETE`/`TRUNCATE`, `JOIN`/`JOIN ON`/`CROSS JOIN`/`LEFT`/`RIGHT`/`OUTER JOIN`, `EXISTS`, `EQUIV`, `UNION`/`EXCEPT`/`INTERSECT`/`DIVIDED BY [ WITH REMAINDER ]`, scalar functions, aggregates, `GROUP BY`, `HAVING`, `AS OF`, `ORDER BY`, `TOP`.
