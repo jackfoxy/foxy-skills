@@ -71,6 +71,7 @@ Literals follow hoon aura notation. Some auras accept relaxed forms in `INSERT`/
 | @sx/@sb/@sv/@sw | signed | `--0x2004.90fd` / `-0x2004.90fd` | same |
 | @t | UTF-8 cord | `'text'`, `'it\\'s'` | same |
 | @ub | unsigned binary | `10.1011` | same |
+| @uc | bitcoin address | `0c1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa`, bare `1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa` | same |
 | @ud | unsigned decimal | `2.222` or `2222` | `2.222` |
 | @ux | unsigned hex | `0x12.6401` | same |
 | @uv | unsigned base32 | `0v1f.ab3ck` (dotted every 5 digits) | same |
@@ -78,6 +79,7 @@ Literals follow hoon aura notation. Some auras accept relaxed forms in `INSERT`/
 - **Cords** use single quotes. Embed a single quote with double backslash: `'it\\'s'`.
 - **@rd floats need the `.~` prefix**: `3.14` → `.~3.14`, `0.1` → `.~0.1`. Bare `.3.14` is `@rs`.
 - `@c`, `@q`, `@ta`, `@tas` literals are unsupported/pending; insert via the API.
+- **@uc** is base58check only: 25 bytes decoded, version `0x00`/`0x05` (mainnet `1`/`3`) or `0x6f`/`0xc4` (testnet `m`/`n`/`2`), checksum verified. A bad `0c` literal crashes `invalid @uc address: 0c…`; a bare token is `@uc` only if it verifies (a verified bare `m…`/`n…` testnet address is a literal, not a column). Bech32 `bc1…`/`tb1…` crashes `bech32 address is not @uc: …`. Results display bare; bunt is `1111111111111111111114oLvT2`. Not numeric (no arithmetic, no bit width); orders by atom; may be a key.
 - `DEFAULT` keyword = the column aura's bunt (default) value (valid in `INSERT`/`UPSERT` values and `UPDATE ... SET`).
 
 ## Comments
